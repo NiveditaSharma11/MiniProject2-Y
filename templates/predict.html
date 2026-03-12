@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Energy Demand Prediction</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Poppins', sans-serif;
+background:#0b1c2c;
+color:white;
+}
+
+/* NAVBAR */
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 60px;
+background:#081625;
+}
+
+.logo{
+font-size:22px;
+font-weight:600;
+color:#00e5ff;
+}
+
+.nav-links a{
+margin-left:25px;
+text-decoration:none;
+color:white;
+}
+
+/* PAGE HEADER */
+
+.header{
+text-align:center;
+padding:60px 20px 20px 20px;
+}
+
+.header h1{
+margin-bottom:10px;
+}
+
+.header p{
+color:#cfd8dc;
+}
+
+/* FORM CARD */
+
+.form-container{
+display:flex;
+justify-content:center;
+margin-top:40px;
+}
+
+.card{
+background:#132f4c;
+padding:40px;
+border-radius:10px;
+width:420px;
+}
+
+/* INPUTS */
+
+label{
+display:block;
+margin-top:15px;
+margin-bottom:5px;
+}
+
+input, select{
+width:100%;
+padding:10px;
+border-radius:6px;
+border:none;
+}
+
+/* BUTTONS */
+
+.buttons{
+margin-top:25px;
+display:flex;
+justify-content:space-between;
+}
+
+.predict-btn{
+padding:12px 20px;
+background:#00e5ff;
+border:none;
+border-radius:6px;
+font-weight:600;
+cursor:pointer;
+}
+
+.back-btn{
+padding:12px 20px;
+background:#081625;
+border:none;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
+/* INFO SECTION */
+
+.info{
+text-align:center;
+margin-top:40px;
+color:#cfd8dc;
+}
+
+footer{
+text-align:center;
+padding:30px;
+background:#081625;
+margin-top:60px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div class="logo">⚡ Smart Energy AI</div>
+
+<div class="nav-links">
+<a href="/">Home</a>
+<a href="/predict_page">Predict</a>
+</div>
+
+</div>
+
+
+<!-- PAGE HEADER -->
+
+<div class="header">
+
+<h1>⚡ Energy Demand Prediction</h1>
+
+<p>
+Enter location and time to forecast electricity demand using AI and weather data
+</p>
+
+</div>
+
+
+<!-- FORM -->
+
+<div class="form-container">
+
+<div class="card">
+
+<form action="/predict" method="POST">
+
+<label>📍 City Name</label>
+<input type="text" name="city" placeholder="Enter City" required>
+
+
+<label>📅 Date</label>
+<input type="date" name="date">
+
+
+<label>⏰ Time</label>
+<input type="time" name="time">
+
+
+<label>🏭 Region Type</label>
+<select name="region">
+<option>Residential</option>
+<option>Industrial</option>
+<option>Commercial</option>
+<option>Mixed</option>
+</select>
+
+
+<div class="buttons">
+
+<button class="predict-btn" type="submit">
+Predict Demand
+</button>
+
+<a href="/">
+<button class="back-btn" type="button">
+Back
+</button>
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+<!-- INFO -->
+
+<div class="info">
+
+<p>
+Weather data will be automatically fetched to improve prediction accuracy.
+</p>
+
+<p>
+The AI model analyzes temperature, humidity, and other factors to forecast grid load.
+</p>
+
+</div>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+<p>Smart Energy Grid Forecasting | AI Powered Energy Analytics</p>
+
+</footer>
+
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Energy Analytics</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Poppins',sans-serif;
+background:#0b1c2c;
+color:white;
+display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:220px;
+background:#081625;
+padding:30px 20px;
+height:100vh;
+}
+
+.sidebar h2{
+color:#ff7af6;
+margin-bottom:40px;
+}
+
+.sidebar a{
+display:block;
+margin:15px 0;
+text-decoration:none;
+color:white;
+}
+
+/* MAIN AREA */
+
+.main{
+flex:1;
+padding:30px;
+}
+
+/* CHART GRID */
+
+.charts{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:25px;
+margin-top:30px;
+}
+
+.chart-card{
+background:#132f4c;
+padding:20px;
+border-radius:10px;
+}
+
+/* INSIGHT PANEL */
+
+.insight{
+margin-top:30px;
+background:#132f4c;
+padding:20px;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<h2>⚡ Smart Energy</h2>
+
+<a href="/">Home</a>
+<a href="/predict_page">Forecast</a>
+<a href="/dashboard">Dashboard</a>
+<a href="/weather">Weather</a>
+<a href="/analytics">Analytics</a>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="main">
+
+<h1>Energy Analytics</h1>
+
+<p>
+Advanced analytics help identify electricity consumption patterns,
+peak demand hours, and sector-wise energy distribution across the grid.
+</p>
+
+
+<div class="charts">
+
+<!-- WEEKLY TREND -->
+
+<div class="chart-card">
+<h3>Weekly Demand Trend</h3>
+<canvas id="trendChart"></canvas>
+</div>
+
+
+<!-- SECTOR USAGE -->
+
+<div class="chart-card">
+<h3>Sector Energy Distribution</h3>
+<canvas id="sectorChart"></canvas>
+</div>
+
+
+<!-- PEAK HOURS -->
+
+<div class="chart-card">
+<h3>Peak Hour Demand</h3>
+<canvas id="peakChart"></canvas>
+</div>
+
+
+<!-- TEMP VS DEMAND -->
+
+<div class="chart-card">
+<h3>Temperature vs Energy Demand</h3>
+<canvas id="correlationChart"></canvas>
+</div>
+
+</div>
+
+
+<!-- AI INSIGHT PANEL -->
+
+<div class="insight">
+
+<h3>AI Energy Insights</h3>
+
+<ul>
+
+<li>Electricity demand peaks during evening hours due to residential usage.</li>
+
+<li>Industrial sector contributes a significant portion of daily grid load.</li>
+
+<li>Higher temperatures strongly correlate with increased cooling demand.</li>
+
+<li>Predictive analytics can help utilities plan backup generation.</li>
+
+</ul>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+/* WEEKLY DEMAND TREND */
+
+const trend = document.getElementById('trendChart');
+
+new Chart(trend,{
+type:'line',
+data:{
+labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+datasets:[{
+label:'Demand (MW)',
+data:[320,350,370,400,420,410,380],
+fill:true,
+backgroundColor:'rgba(186,104,200,0.2)',
+borderColor:'#ba68c8',
+borderWidth:3,
+tension:0.4
+}]
+}
+});
+
+
+/* SECTOR ENERGY DISTRIBUTION */
+
+const sector = document.getElementById('sectorChart');
+
+new Chart(sector,{
+type:'doughnut',
+data:{
+labels:['Residential','Industrial','Commercial'],
+datasets:[{
+data:[45,35,20],
+backgroundColor:[
+'#ff7043',
+'#ab47bc',
+'#29b6f6'
+]
+}]
+}
+});
+
+
+/* PEAK HOUR DEMAND */
+
+const peak = document.getElementById('peakChart');
+
+new Chart(peak,{
+type:'bar',
+data:{
+labels:['6AM','9AM','12PM','3PM','6PM','9PM'],
+datasets:[{
+label:'Demand (MW)',
+data:[200,340,410,390,480,450],
+backgroundColor:'#ff9800'
+}]
+}
+});
+
+
+/* TEMPERATURE VS DEMAND */
+
+const correlation = document.getElementById('correlationChart');
+
+new Chart(correlation,{
+type:'scatter',
+data:{
+datasets:[{
+label:'Temp vs Demand',
+data:[
+{x:25,y:300},
+{x:28,y:320},
+{x:30,y:350},
+{x:32,y:380},
+{x:35,y:420}
+],
+backgroundColor:'#ff7af6'
+}]
+},
+options:{
+scales:{
+x:{
+title:{
+display:true,
+text:'Temperature (°C)'
+}
+},
+y:{
+title:{
+display:true,
+text:'Energy Demand (MW)'
+}
+}
+}
+}
+});
+
+</script>
+
+
+</body>
+</html>
