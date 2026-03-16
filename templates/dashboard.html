@@ -253,7 +253,7 @@ to{opacity:0.7;}
 
 <a href="/dashboard">Dashboard</a>
 
-<a href="/weather">Weather</a>
+<a href="/weather?city={{city}}">Weather</a>
 
 <a href="/analytics">Analytics</a>
 
@@ -369,39 +369,96 @@ if demand exceeds safe threshold.
 
 <script>
 
-/* DEMAND FORECAST CHART */
+/* AI DEMAND FORECAST FROM MODEL */
 
-const ctx = document.getElementById('forecastChart');
+let forecastChart;
 
-new Chart(ctx,{
-type:'line',
+async function loadForecast(){
+
+const res = await fetch("/api/prediction-forecast");
+
+const data = await res.json();
+
+if(!forecastChart){
+
+const ctx = document.getElementById("forecastChart");
+
+forecastChart = new Chart(ctx,{
+
+type:"line",
+
 data:{
-labels:[1,2,3,4,5,6,7,8,9,10,11,12],
+labels:data.hours,
+
 datasets:[{
-label:'Demand (MW)',
-data:[320,340,360,400,420,450,470,500,480,460,430,410],
-borderColor:'#00e5ff',
-borderWidth:3
+label:"Predicted Electricity Demand (MW)",
+data:data.predictions,
+borderColor:"#00e5ff",
+backgroundColor:"rgba(0,229,255,0.2)",
+borderWidth:3,
+tension:0.4,
+fill:true
 }]
+},
+
+options:{
+plugins:{
+legend:{
+labels:{color:"white"}
 }
+},
+
+scales:{
+x:{
+ticks:{color:"white"}
+},
+y:{
+ticks:{color:"white"}
+}
+}
+
+}
+
 });
 
+}
+else{
+
+forecastChart.data.labels = data.hours;
+
+forecastChart.data.datasets[0].data = data.predictions;
+
+forecastChart.update();
+
+}
+
+}
+
+loadForecast();
+
+setInterval(loadForecast,10000);
 
 /* PIE CHART */
 
-const pie = document.getElementById('pieChart');
+const pie = document.getElementById('pieChart').getContext('2d');
+
+const residential = {{ residential | default(0) }};
+const industrial = {{ industrial | default(0) }};
+const commercial = {{ commercial | default(0) }};
 
 new Chart(pie,{
-type:'pie',
-data:{
-labels:['Residential','Industrial','Commercial'],
-datasets:[{
-data:[40,35,25],
-backgroundColor:['#00e5ff','#4caf50','#ff9800']
-}]
-}
+    type:'pie',
+    data:{
+        labels:['Residential','Industrial','Commercial'],
+        datasets:[{
+            data:[residential, industrial, commercial],
+            backgroundColor:['#00e5ff','#4caf50','#ff9800']
+        }]
+    },
+    options:{
+        responsive:true
+    }
 });
-
 
 /* WEATHER CHART */
 
@@ -461,7 +518,9 @@ let demandValue = Number("{{prediction}}");
 
 let alertBox = document.getElementById("gridAlert");
 
-if(demandValue > 450){
+let peakRisk = "{{peak}}";
+
+if(peakRisk === "High Risk"){
 
 alertBox.innerHTML = "⚠ GRID OVERLOAD WARNING — DEMAND VERY HIGH";
 

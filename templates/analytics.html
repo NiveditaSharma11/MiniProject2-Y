@@ -88,7 +88,7 @@ border-radius:10px;
 <a href="/predict_page">Forecast</a>
 <a href="/dashboard">Dashboard</a>
 <a href="/weather">Weather</a>
-<a href="/analytics">Analytics</a>
+<a href="/analytics?city={{city}}">Analytics</a>
 
 </div>
 
@@ -100,8 +100,9 @@ border-radius:10px;
 <h1>Energy Analytics</h1>
 
 <p>
-Advanced analytics help identify electricity consumption patterns,
-peak demand hours, and sector-wise energy distribution across the grid.
+AI-driven analytics reveal energy consumption patterns,
+peak grid load periods, and prediction accuracy
+to support smart grid decision making.
 </p>
 
 
@@ -115,13 +116,10 @@ peak demand hours, and sector-wise energy distribution across the grid.
 </div>
 
 
-<!-- SECTOR USAGE -->
-
 <div class="chart-card">
-<h3>Sector Energy Distribution</h3>
-<canvas id="sectorChart"></canvas>
+<h3>Renewable Energy Contribution</h3>
+<canvas id="renewChart"></canvas>
 </div>
-
 
 <!-- PEAK HOURS -->
 
@@ -189,22 +187,51 @@ tension:0.4
 });
 
 
-/* SECTOR ENERGY DISTRIBUTION */
+const renewable = JSON.parse('{{ renewable | tojson }}');
+const nonRenewable = JSON.parse('{{ non_renewable | tojson }}');
 
-const sector = document.getElementById('sectorChart');
-
-new Chart(sector,{
-type:'doughnut',
+new Chart(
+document.getElementById("renewChart"),
+{
+type:"bar",
 data:{
-labels:['Residential','Industrial','Commercial'],
+labels:["Renewable","Non-Renewable"],
 datasets:[{
-data:[45,35,20],
+label:"Energy Supply (MW)",
+data:[renewable, nonRenewable],
 backgroundColor:[
-'#ff7043',
-'#ab47bc',
-'#29b6f6'
-]
+"#38bdf8",
+"#6366f1"
+],
+borderRadius:6
 }]
+},
+options:{
+plugins:{
+legend:{
+labels:{
+color:"white"
+}
+}
+},
+scales:{
+x:{
+ticks:{
+color:"white"
+},
+grid:{
+color:"rgba(255,255,255,0.05)"
+}
+},
+y:{
+ticks:{
+color:"white"
+},
+grid:{
+color:"rgba(255,255,255,0.05)"
+}
+}
+}
 }
 });
 
