@@ -88,7 +88,7 @@ border-radius:10px;
 <a href="/predict_page">Forecast</a>
 <a href="/dashboard">Dashboard</a>
 <a href="/weather">Weather</a>
-<a href="/analytics?city={{city}}">Analytics</a>
+<a href="/analytics?city={{ city | default('Delhi') }}">Analytics</a>
 
 </div>
 
@@ -163,132 +163,90 @@ to support smart grid decision making.
 </div>
 
 
-
 <script>
 
-/* WEEKLY DEMAND TREND */
+async function loadAnalytics(){
 
-const trend = document.getElementById('trendChart');
+    let city = "{{city}}";
 
-new Chart(trend,{
-type:'line',
-data:{
-labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-datasets:[{
-label:'Demand (MW)',
-data:[320,350,370,400,420,410,380],
-fill:true,
-backgroundColor:'rgba(186,104,200,0.2)',
-borderColor:'#ba68c8',
-borderWidth:3,
-tension:0.4
-}]
-}
-});
+    const res = await fetch(`/api/analytics-data?city=${city}`);
+    const data = await res.json();
 
+    /* WEEKLY TREND */
 
-const renewable = JSON.parse('{{ renewable | tojson }}');
-const nonRenewable = JSON.parse('{{ non_renewable | tojson }}');
+    new Chart(document.getElementById('trendChart'),{
+        type:'line',
+        data:{
+            labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+            datasets:[{
+                label:'Demand (MW)',
+                data: data.weekly,
+                fill:true,
+                backgroundColor:'rgba(186,104,200,0.2)',
+                borderColor:'#ba68c8',
+                borderWidth:3,
+                tension:0.4
+            }]
+        }
+    });
 
-new Chart(
-document.getElementById("renewChart"),
-{
-type:"bar",
-data:{
-labels:["Renewable","Non-Renewable"],
-datasets:[{
-label:"Energy Supply (MW)",
-data:[renewable, nonRenewable],
-backgroundColor:[
-"#38bdf8",
-"#6366f1"
-],
-borderRadius:6
-}]
-},
-options:{
-plugins:{
-legend:{
-labels:{
-color:"white"
-}
-}
-},
-scales:{
-x:{
-ticks:{
-color:"white"
-},
-grid:{
-color:"rgba(255,255,255,0.05)"
-}
-},
-y:{
-ticks:{
-color:"white"
-},
-grid:{
-color:"rgba(255,255,255,0.05)"
-}
-}
-}
-}
-});
+    /* RENEWABLE */
 
+    new Chart(document.getElementById("renewChart"),{
+        type:"bar",
+        data:{
+            labels:["Renewable","Non-Renewable"],
+            datasets:[{
+                label:"Energy Supply (MW)",
+                data:[data.renewable, data.non_renewable],
+                backgroundColor:["#38bdf8","#6366f1"],
+                borderRadius:6
+            }]
+        },
+        options:{
+            plugins:{ legend:{ labels:{ color:"white" } } },
+            scales:{
+                x:{ ticks:{ color:"white" } },
+                y:{ ticks:{ color:"white" } }
+            }
+        }
+    });
 
-/* PEAK HOUR DEMAND */
+    /* PEAK */
 
-const peak = document.getElementById('peakChart');
+    new Chart(document.getElementById('peakChart'),{
+        type:'bar',
+        data:{
+            labels:['6AM','9AM','12PM','3PM','6PM','9PM'],
+            datasets:[{
+                label:'Demand (MW)',
+                data: data.peak,
+                backgroundColor:'#ff9800'
+            }]
+        }
+    });
 
-new Chart(peak,{
-type:'bar',
-data:{
-labels:['6AM','9AM','12PM','3PM','6PM','9PM'],
-datasets:[{
-label:'Demand (MW)',
-data:[200,340,410,390,480,450],
-backgroundColor:'#ff9800'
-}]
+    /* CORRELATION */
+
+    new Chart(document.getElementById('correlationChart'),{
+        type:'scatter',
+        data:{
+            datasets:[{
+                label:'Temp vs Demand',
+                data: data.correlation
+            }]
+        },
+        options:{
+            scales:{
+                x:{ title:{ display:true, text:'Temperature (°C)' }},
+                y:{ title:{ display:true, text:'Energy Demand (MW)' }}
+            }
+        }
+    });
+
 }
-});
 
-
-/* TEMPERATURE VS DEMAND */
-
-const correlation = document.getElementById('correlationChart');
-
-new Chart(correlation,{
-type:'scatter',
-data:{
-datasets:[{
-label:'Temp vs Demand',
-data:[
-{x:25,y:300},
-{x:28,y:320},
-{x:30,y:350},
-{x:32,y:380},
-{x:35,y:420}
-],
-backgroundColor:'#ff7af6'
-}]
-},
-options:{
-scales:{
-x:{
-title:{
-display:true,
-text:'Temperature (°C)'
-}
-},
-y:{
-title:{
-display:true,
-text:'Energy Demand (MW)'
-}
-}
-}
-}
-});
+loadAnalytics();
 
 </script>
 

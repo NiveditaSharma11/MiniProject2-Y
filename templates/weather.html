@@ -117,100 +117,101 @@ width:100%;
 </div>
 
 <script>
-const tempData = JSON.parse('{{ temps | tojson }}');
-const humidityData = JSON.parse('{{ humidity_trend | tojson }}');
-const demandData = JSON.parse('{{ demand | tojson }}');
 
-const labels = ["Morning","Noon","Evening","Night"];
+async function loadWeatherData(){
 
-new Chart(
-document.getElementById("tempChart"),
-{
-type:"line",
-data:{
-labels:labels,
-datasets:[{
+    let city = "{{city}}";
 
-label:"Temperature Trend",
+    const res = await fetch(`/api/weather-data?city=${city}`);
+    const data = await res.json();
 
-data:tempData,
+    if(data.error){
+        console.log(data.error);
+        return;
+    }
 
-borderColor:"#38bdf8",
+    /* UPDATE CARDS */
 
-backgroundColor:"rgba(56,189,248,0.2)",
+    document.querySelectorAll(".card h2")[1].innerText = data.temperature + " °C";
+    document.querySelectorAll(".card h2")[2].innerText = data.humidity[3] + " %";
+    document.querySelectorAll(".card h2")[3].innerText = data.wind + " m/s";
 
-fill:true,
+    const labels = ["Morning","Noon","Evening","Night"];
 
-tension:0.4
+    /* TEMPERATURE CHART */
 
-}]
+    new Chart(document.getElementById("tempChart"), {
+        type:"line",
+        data:{
+            labels:labels,
+            datasets:[{
+                label:"Temperature Trend",
+                data:data.temps,
+                borderColor:"#38bdf8",
+                fill:true
+            }]
+        }
+    });
+
+    /* HUMIDITY CHART */
+
+    new Chart(document.getElementById("humidityChart"), {
+        type:"bar",
+        data:{
+            labels:labels,
+            datasets:[{
+                label:"Humidity Trend",
+                data:data.humidity,
+                backgroundColor:"#0ea5e9"
+            }]
+        }
+    });
+
+    /* RADAR CHART */
+
+    new Chart(document.getElementById("radarChart"), {
+        type:"radar",
+        data:{
+            labels:["Temperature","Humidity","Wind","Clouds","Pressure"],
+            datasets:[{
+                label:"Weather Impact",
+                data:[
+                    data.temperature,
+                    data.humidity[3],
+                    data.wind,
+                    data.clouds,
+                    100
+                ],
+                backgroundColor:"rgba(99,102,241,0.25)",
+                borderColor:"#6366f1"
+            }]
+        }
+    });
+
+    /* DEMAND VS TEMP */
+
+    new Chart(document.getElementById("demandChart"), {
+        type:"line",
+        data:{
+            labels:labels,
+            datasets:[
+                {
+                    label:"Temperature",
+                    data:data.temps,
+                    borderColor:"#38bdf8"
+                },
+                {
+                    label:"Energy Demand",
+                    data:data.demand,
+                    borderColor:"#6366f1"
+                }
+            ]
+        }
+    });
+
 }
-}
-);
 
-new Chart(
-document.getElementById("humidityChart"),
-{
-type:"bar",
-data:{
-labels:labels,
-datasets:[{
-
-label:"Humidity Trend",
-
-data:humidityData,
-
-backgroundColor:"#0ea5e9"
-
-}]
-}
-}
-);
-
-new Chart(
-document.getElementById("radarChart"),
-{
-type:"radar",
-data:{
-labels:["Temperature","Humidity","Wind","Clouds","Pressure"],
-datasets:[{
-
-label:"Weather Impact",
-
-data:[70,60,40,50,45],
-
-backgroundColor:"rgba(99,102,241,0.25)",
-
-borderColor:"#6366f1"
-
-}]
-}
-}
-);
-
-new Chart(
-document.getElementById("demandChart"),
-{
-type:"line",
-data:{
-labels:labels,
-datasets:[
-{
-label:"Temperature",
-data:tempData,
-borderColor:"#38bdf8",
-fill:false
-},
-{
-label:"Energy Demand",
-data:demandData,
-borderColor:"#6366f1",
-fill:false
-}
-]
-}
-}
-);
+loadWeatherData();
 
 </script>
 

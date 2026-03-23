@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Load Forecasting</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 350px;
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            text-align: center;
+            color: white;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        input::placeholder {
+            color: #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #00c6ff;
+            background: linear-gradient(to right, #0072ff, #00c6ff);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Load Forecasting Login</h2>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+
+    <div class="error" id="error"></div>
+    <div style="
+    margin-top:15px;
+    font-size:13px;
+    color:#cfd8dc;
+    background: rgba(255,255,255,0.08);
+    padding:10px;
+    border-radius:8px;
+    ">
+    Demo Login:<br>
+    Username: <b>admin</b><br>
+    Password: <b>admin123</b>
+</div>
+
+</div>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.token) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "/predict_page";
+            } else {
+                document.getElementById("error").innerText = data.error;
+            }
+        })
+        .catch(() => {
+            document.getElementById("error").innerText = "Server error";
+        });
+    }
+</script>
+
+</body>
+</html>

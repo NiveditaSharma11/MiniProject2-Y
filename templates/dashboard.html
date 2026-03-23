@@ -274,6 +274,11 @@ to{opacity:0.7;}
 <h3>⚡ Predicted Demand</h3>
 <p id="demandValue">{{prediction}}</p>
 <p>MW</p>
+
+<p style="font-size:14px;color:#cbd5f5;">
+Range: {{lower_bound}} - {{upper_bound}} MW
+</p>
+
 </div>
 
 <div class="card">
@@ -335,10 +340,10 @@ Based on current weather conditions and predicted demand,
 the grid is operating under <b>{{status}}</b> conditions.
 </p>
 
+<p>📈 Trend: <b>{{ trend }}</b></p>
+
 <p>
-Suggested Action:
-Monitor demand fluctuations and prepare backup generation
-if demand exceeds safe threshold.
+Suggested Action: <b>{{ recommendation }}</b>
 </p>
 
 </div>
@@ -372,10 +377,11 @@ if demand exceeds safe threshold.
 /* AI DEMAND FORECAST FROM MODEL */
 
 let forecastChart;
+let city = "{{city}}";
 
 async function loadForecast(){
 
-const res = await fetch("/api/prediction-forecast");
+const res = await fetch(`/api/chart-data?city=${city}`);
 
 const data = await res.json();
 
@@ -388,11 +394,11 @@ forecastChart = new Chart(ctx,{
 type:"line",
 
 data:{
-labels:data.hours,
+labels:data.labels,
 
 datasets:[{
 label:"Predicted Electricity Demand (MW)",
-data:data.predictions,
+data:data.demand,
 borderColor:"#00e5ff",
 backgroundColor:"rgba(0,229,255,0.2)",
 borderWidth:3,
@@ -424,9 +430,9 @@ ticks:{color:"white"}
 }
 else{
 
-forecastChart.data.labels = data.hours;
+forecastChart.data.labels = data.labels;
 
-forecastChart.data.datasets[0].data = data.predictions;
+forecastChart.data.datasets[0].data = data.demand;
 
 forecastChart.update();
 
@@ -440,31 +446,40 @@ setInterval(loadForecast,10000);
 
 /* PIE CHART */
 
-const pie = document.getElementById('pieChart').getContext('2d');
+async function loadPieChart(){
 
-const residential = {{ residential | default(0) }};
-const industrial = {{ industrial | default(0) }};
-const commercial = {{ commercial | default(0) }};
+    const res = await fetch(`/api/dashboard-data`);
+    const data = await res.json();
 
-new Chart(pie,{
-    type:'pie',
-    data:{
-        labels:['Residential','Industrial','Commercial'],
-        datasets:[{
-            data:[residential, industrial, commercial],
-            backgroundColor:['#00e5ff','#4caf50','#ff9800']
-        }]
-    },
-    options:{
-        responsive:true
-    }
-});
+    const pie = document.getElementById('pieChart').getContext('2d');
+
+    new Chart(pie,{
+        type:'pie',
+        data:{
+            labels:['Residential','Industrial','Commercial'],
+            datasets:[{
+                data:[data.residential, data.industrial, data.commercial],
+                backgroundColor:['#00e5ff','#4caf50','#ff9800']
+            }]
+        },
+        options:{
+            responsive:true
+        }
+    });
+
+}
+
+if(document.getElementById("pieChart")){
+    loadPieChart();
+}
 
 /* WEATHER CHART */
 
 const temperature = Number("{{ temperature | default(0) }}");
 
 const weather = document.getElementById('weatherChart');
+const humidity = Number("{{ humidity | default(0) }}");
+const wind = Number("{{ wind | default(0) }}");
 
 new Chart(weather, {
     type: 'bar',
@@ -472,7 +487,7 @@ new Chart(weather, {
         labels: ['Temperature', 'Humidity', 'Wind'],
         datasets: [{
             label: 'Weather Impact',
-            data: [temperature, 50, 10],
+            data: [temperature, humidity, wind],
             backgroundColor: ['#00e5ff', '#4caf50', '#ff9800']
         }]
     },
@@ -498,19 +513,21 @@ new Chart(weather, {
 
 /* LIVE DEMAND ANIMATION */
 
-let demand = Number("{{prediction}}");
+async function updateDemand(){
 
-function animateDemand(){
+let city = "{{city}}";
 
-let randomChange = Math.floor(Math.random()*10 - 5);
+const res = await fetch(`/api/chart-data?city=${city}`);
 
-demand = demand + randomChange;
+const data = await res.json();
 
-document.getElementById("demandValue").innerText = demand;
+let latestDemand = data.demand[data.demand.length - 1];
+
+document.getElementById("demandValue").innerText = latestDemand;
 
 }
 
-setInterval(animateDemand,2000);
+setInterval(updateDemand,5000);
 
 /* GRID OVERLOAD ALERT */
 
