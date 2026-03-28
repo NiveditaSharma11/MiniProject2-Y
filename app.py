@@ -223,6 +223,35 @@ def predict():
     demand_history.pop(0)
 
     avg = np.mean(demand_history[-24:])
+    temp = weather["main"]["temp"]
+
+    solar = 0
+    wind_energy = 0
+
+    # Solar depends on sunlight (hour)
+    if 6 <= hour <= 18:
+        sunlight_factor = (hour - 6) / 12
+        solar = round(sunlight_factor * temp * 2, 2)
+
+    # Wind depends on speed (more realistic scaling)
+    wind_speed = weather["wind"]["speed"]
+    solar = round(prediction * (0.2 if temp > 25 else 0.1), 2)
+    wind_energy = round(prediction * (0.1 if wind_speed > 3 else 0.05), 2)
+    renewable = round(solar + wind_energy, 2)
+
+    if renewable > prediction:
+        renewable = prediction
+
+    non_renewable = round(prediction - renewable, 2)
+
+    renewable_status = ""
+
+    if renewable > prediction * 0.5:
+        renewable_status = "High renewable usage 🌱"
+    elif renewable > prediction * 0.3:
+        renewable_status = "Moderate renewable usage ⚡"
+    else:
+        renewable_status = "Low renewable usage 🔥"
 
     if prediction > avg * 1.2:
         status = "High Load"
@@ -235,13 +264,34 @@ def predict():
         peak = "Low Risk"
 
 
-    if peak == "High Risk":
-        recommendation = "Increase power generation and activate backup grids immediately."
-    elif peak == "Medium Risk":
-        recommendation = "Monitor load and prepare additional supply if needed."
-    else:
-        recommendation = "Grid is stable. Maintain current distribution."
+    actions = {}
 
+    if prediction > avg * 1.2 or temp > 35:
+        actions = {
+            "load_shedding": True,
+            "backup_power": True,
+            "demand_response": True,
+            "priority": "critical",
+            "message": "Extreme demand due to heat. Immediate action required."
+        }
+
+    elif prediction > avg:
+        actions = {
+            "load_shedding": False,
+            "backup_power": True,
+            "demand_response": True,
+            "priority": "moderate",
+            "message": "Demand rising. Shift usage to off-peak hours."
+        }
+
+    else:
+        actions = {
+            "load_shedding": False,
+            "backup_power": False,
+            "demand_response": False,
+            "priority": "normal",
+            "message": "Demand under control."
+        }
 
     trend = "Stable"
 
@@ -250,7 +300,32 @@ def predict():
     elif prediction < lag_1:
         trend = "Decreasing"
 
-    temp = weather["main"]["temp"]
+    
+
+    grid_strategy = []
+
+    if actions["load_shedding"]:
+        grid_strategy.append("Cut power to non-critical zones")
+
+    if actions["demand_response"]:
+        grid_strategy.append("Notify users to reduce usage")
+
+    if actions["backup_power"]:
+        grid_strategy.append("Activate diesel/backup generators")
+
+    if temp > 30:
+        grid_strategy.append("High AC usage expected")
+
+    if trend == "Increasing":
+        grid_strategy.append("Prepare for demand spike")
+
+    shifted_load = 0
+    optimized_demand = prediction
+
+    if actions["demand_response"]:
+        shifted_load = round(prediction * 0.1, 2)
+        optimized_demand = round(prediction - shifted_load, 2)
+
 
     factor = 1
 
@@ -287,11 +362,20 @@ def predict():
         temperature=weather["main"]["temp"],
         humidity=weather["main"]["humidity"],
         wind=weather["wind"]["speed"],
+        actions=actions,
         residential=residential,
         industrial=industrial,
         commercial=commercial,
-        recommendation=recommendation,
-        trend=trend
+        recommendation = actions["message"],
+        trend=trend,
+        grid_strategy=grid_strategy,
+        optimized_demand=optimized_demand,
+        shifted_load=shifted_load,
+        solar=solar,
+        wind_energy=wind_energy,
+        renewable=renewable,
+        non_renewable=non_renewable,
+        renewable_status=renewable_status,
     )
 
 
@@ -382,7 +466,7 @@ def analytics():
 
 @app.route("/api/analytics-data")
 @token_required
-@admin_required
+# @admin_required
 @limiter.limit("30 per minute")
 def analytics_data():
 
