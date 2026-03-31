@@ -1,4 +1,5 @@
 import os
+from pyexpat import features
 from random import random
 import random
 
@@ -32,6 +33,39 @@ data = data.sort_values("datetime")
 
 demand_history = data["nat_demand"].tail(24).tolist()
 
+import random
+from datetime import datetime
+
+def simulate_realtime_demand():
+    global demand_history
+
+    last_value = demand_history[-1]
+    hour = datetime.now().hour
+
+    # 📊 Realistic daily pattern
+
+    if 6 <= hour <= 10:
+        base_change = 4   # morning increase
+    elif 18 <= hour <= 22:
+        base_change = 8   # evening peak
+    elif 0 <= hour <= 5:
+        base_change = -6  # night drop
+    else:
+        base_change = 1   # stable daytime
+
+    # 🎯 small randomness (natural fluctuation)
+    noise = random.uniform(-2, 2)
+
+    new_value = last_value + base_change + noise
+
+    # prevent unrealistic values
+    new_value = max(50, new_value)
+
+    new_value = round(new_value, 2)
+
+    demand_history.append(new_value)
+    demand_history.pop(0)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "supersecretkey")
 
@@ -48,12 +82,15 @@ limiter = Limiter(
 )
 
 
-MODEL_PATH = os.getenv("MODEL_PATH", "model/load_forecast_model.pkl")
+FORECAST_MODEL_PATH = "model/load_forecast_model.pkl"
+DECISION_MODEL_PATH = "model/grid_optimiser.pkl"
 
 try:
-    model = joblib.load(MODEL_PATH)
+    forecast_model = joblib.load(FORECAST_MODEL_PATH)
+    decision_model = joblib.load(DECISION_MODEL_PATH)
 except:
-    model = None
+    forecast_model = None
+    decision_model = None
 
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
 if not API_KEY:
@@ -205,15 +242,19 @@ def predict():
 
     features = get_features(weather, hour, day, month, weekday, lag_1, lag_2, lag_24)
 
-    if not model:
+    if not forecast_model:
         print("WARNING: Model not loaded, using fallback")
 
 
     try:
-        if model:
-            prediction = model.predict(features)[0]
+        # 🔮 Demand Prediction (REAL ML)
+
+        if forecast_model:
+            prediction = forecast_model.predict(features)[0]
         else:
             prediction = (lag_1 + lag_2 + lag_24) / 3
+
+        prediction = round(prediction, 2)
     except Exception:
         return render_template("predict.html", error="Prediction failed. Try again.")
     
@@ -246,35 +287,56 @@ def predict():
     renewable = round(solar + wind_energy, 2)
 
     renewable_ratio = renewable / prediction if prediction else 0
+    # 🤖 ML-based Grid Decision
 
-    actions = {}
+    # 🎯 Rule-based context (ONLY explanation, not control)
+    # 🎯 Initialize actions safely
+    actions = {
+        "load_shedding": False,
+        "backup_power": False,
+        "demand_response": False
+    }
 
+# 🎯 Rule-based context (ONLY for explanation)
     if prediction > avg * 1.2 or temp > 35:
-        actions = {
-            "load_shedding": True,
-            "backup_power": True,
-            "demand_response": True,
-            "priority": "critical",
-            "message": "Extreme demand due to heat. Immediate action required."
-        }
+        actions["priority"] = "critical"
+        actions["message"] = "Extreme demand due to heat. Immediate action required."
 
     elif prediction > avg:
-        actions = {
-            "load_shedding": False,
-            "backup_power": True,
-            "demand_response": True,
-            "priority": "moderate",
-            "message": "Demand rising. Shift usage to off-peak hours."
-        }
+        actions["priority"] = "moderate"
+        actions["message"] = "Demand rising. Shift usage to off-peak hours."
 
     else:
-        actions = {
-            "load_shedding": False,
-            "backup_power": False,
-            "demand_response": False,
-            "priority": "normal",
-            "message": "Demand under control."
-        }
+        actions["priority"] = "normal"
+        actions["message"] = "Demand under control."
+
+    decision_input = pd.DataFrame([{
+        "demand": prediction,
+        "temp": weather["main"]["temp"],
+        "renewable_ratio": renewable_ratio
+    }])
+
+    if decision_model:
+        action = decision_model.predict(decision_input)[0]
+    else:
+        action = 1
+
+    if action == 2:
+        actions["load_shedding"] = True
+        actions["backup_power"] = True
+        actions["demand_response"] = True
+
+    elif action == 1:
+        actions["backup_power"] = True
+        actions["demand_response"] = True
+
+
+    if action == 2:
+        actions["ml_decision"] = "High Demand → Activate backup & demand response"
+    elif action == 1:
+        actions["ml_decision"] = "Moderate Demand → Balance grid"
+    else:
+        actions["ml_decision"] = "Low Demand → Normal operation"
 
     # 🎯 Decision Intelligence based on renewable
 
@@ -340,6 +402,21 @@ def predict():
         actions["emergency"] = "CONTROLLED"
         actions["message"] += " High demand but renewable helping stabilize grid."
 
+    # 🧠 AI GRID DECISION ENGINE
+
+    grid_score = (renewable_ratio * 0.6) - ((prediction / avg) * 0.4)
+
+    if grid_score > 0.3:
+        actions["ai_decision"] = "Optimal Grid State ✅"
+        actions["ai_advice"] = "Grid is stable. Maximize renewable usage."
+
+    elif grid_score > 0:
+        actions["ai_decision"] = "Moderate Load ⚠"
+        actions["ai_advice"] = "Balance renewable and conventional sources."
+
+    else:
+        actions["ai_decision"] = "Critical Load 🚨"
+        actions["ai_advice"] = "Reduce load + activate backup immediately."
 
     trend = "Stable"
 
@@ -439,6 +516,7 @@ def predict():
 def chart_data():
 
     global demand_history
+    simulate_realtime_demand()
 
     hours = list(range(1, 25))
     predictions = []
@@ -487,8 +565,8 @@ def chart_data():
 
         features = get_features(simulated_weather, h, day, month, weekday, lag_1, lag_2, lag_24)
 
-        if model:
-            pred = model.predict(features)[0]
+        if forecast_model:
+            pred = forecast_model.predict(features)[0]
         else:
             pred = (lag_1 + lag_2 + lag_24) / 3
 
