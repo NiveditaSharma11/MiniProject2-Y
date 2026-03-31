@@ -87,6 +87,8 @@ border-radius:10px;
 <a href="/">Home</a>
 <a href="/predict_page">Forecast</a>
 <a href="/dashboard">Dashboard</a>
+
+<a href="/renewable">Renewable</a>
 <a href="/weather">Weather</a>
 <a href="/analytics?city={{ city | default('Delhi') }}">Analytics</a>
 
@@ -169,7 +171,13 @@ async function loadAnalytics(){
 
     let city = "{{city}}";
 
-    const res = await fetch(`/api/analytics-data?city=${city}`);
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`/api/analytics-data?city=${city}`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
     const data = await res.json();
 
     /* WEEKLY TREND */

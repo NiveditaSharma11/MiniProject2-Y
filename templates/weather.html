@@ -122,7 +122,13 @@ async function loadWeatherData(){
 
     let city = "{{city}}";
 
-    const res = await fetch(`/api/weather-data?city=${city}`);
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`/api/weather-data?city=${city}`, {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
     const data = await res.json();
 
     if(data.error){

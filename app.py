@@ -1,4 +1,6 @@
 import os
+from random import random
+import random
 
 from flask import Flask, render_template, request, jsonify
 import joblib
@@ -141,21 +143,21 @@ def predict_page():
     return render_template("predict.html")
 
 def get_features(weather, hour, day, month, weekday, lag_1, lag_2, lag_24):
-    return [[
-        weather["main"]["temp"],
-        weather["main"]["humidity"],
-        weather["clouds"]["all"],
-        weather["wind"]["speed"],
-        hour,
-        day,
-        month,
-        weekday,
-        0,
-        0,
-        lag_1,
-        lag_2,
-        lag_24
-    ]]
+    return pd.DataFrame([{
+        "T2M_toc": weather["main"]["temp"],
+        "QV2M_toc": weather["main"]["humidity"],
+        "TQL_toc": weather["clouds"]["all"],
+        "W2M_toc": weather["wind"]["speed"],
+        "hour": hour,
+        "day": day,
+        "month": month,
+        "day_of_week": weekday,
+        "holiday": 0,
+        "school": 0,
+        "lag_1": lag_1,
+        "lag_2": lag_2,
+        "lag_24": lag_24
+    }])
 
 @app.route("/predict", methods=["POST"])
 @limiter.limit("10 per minute")
@@ -206,6 +208,7 @@ def predict():
     if not model:
         print("WARNING: Model not loaded, using fallback")
 
+
     try:
         if model:
             prediction = model.predict(features)[0]
@@ -225,44 +228,24 @@ def predict():
     avg = np.mean(demand_history[-24:])
     temp = weather["main"]["temp"]
 
-    solar = 0
-    wind_energy = 0
+    clouds = weather["clouds"]["all"]
+    wind_speed = weather["wind"]["speed"]
 
-    # Solar depends on sunlight (hour)
+    # ☀ SOLAR (based on sunlight + clouds)
     if 6 <= hour <= 18:
         sunlight_factor = (hour - 6) / 12
-        solar = round(sunlight_factor * temp * 2, 2)
+        cloud_factor = (100 - clouds) / 100
+        solar = round(sunlight_factor * cloud_factor * 50, 2)
+    else:
+        solar = 0
 
-    # Wind depends on speed (more realistic scaling)
-    wind_speed = weather["wind"]["speed"]
-    solar = round(prediction * (0.2 if temp > 25 else 0.1), 2)
-    wind_energy = round(prediction * (0.1 if wind_speed > 3 else 0.05), 2)
+    # 🌬 WIND (cubic relation)
+    wind_energy = round((wind_speed ** 3) * 0.5, 2)
+
+    # ⚡ TOTAL
     renewable = round(solar + wind_energy, 2)
 
-    if renewable > prediction:
-        renewable = prediction
-
-    non_renewable = round(prediction - renewable, 2)
-
-    renewable_status = ""
-
-    if renewable > prediction * 0.5:
-        renewable_status = "High renewable usage 🌱"
-    elif renewable > prediction * 0.3:
-        renewable_status = "Moderate renewable usage ⚡"
-    else:
-        renewable_status = "Low renewable usage 🔥"
-
-    if prediction > avg * 1.2:
-        status = "High Load"
-        peak = "High Risk"
-    elif prediction > avg * 0.9:
-        status = "Moderate Load"
-        peak = "Medium Risk"
-    else:
-        status = "Normal Load"
-        peak = "Low Risk"
-
+    renewable_ratio = renewable / prediction if prediction else 0
 
     actions = {}
 
@@ -293,6 +276,71 @@ def predict():
             "message": "Demand under control."
         }
 
+    # 🎯 Decision Intelligence based on renewable
+
+    if renewable_ratio > 0.5:
+        actions["strategy"] = "Use Renewable Priority"
+        actions["grid_action"] = "Reduce fossil fuel usage"
+        actions["message"] += " Renewable supply is high. Shift grid to green energy."
+
+    elif renewable_ratio > 0.3:
+        actions["strategy"] = "Balanced Energy Mix"
+        actions["grid_action"] = "Use hybrid supply"
+        actions["message"] += " Moderate renewable available. Balance sources."
+
+    else:
+        actions["strategy"] = "Conventional Backup Mode"
+        actions["grid_action"] = "Increase non-renewable generation"
+        actions["message"] += " Renewable low. Activate backup sources."
+
+
+    # 💰 Cost intelligence
+
+    cost_saving = round(renewable * 2, 2)
+
+    if renewable_ratio > 0.4:
+        actions["cost_impact"] = f"Saving approx ₹{cost_saving} due to renewable usage"
+    else:
+        actions["cost_impact"] = "Higher operational cost due to fossil fuel usage"
+
+    # cap
+    if renewable > prediction:
+        renewable = prediction
+
+    non_renewable = round(prediction - renewable, 2)
+
+    renewable_status = ""
+
+    ratio = renewable / prediction if prediction else 0
+
+    if ratio > 0.6:
+        renewable_status = "Excellent renewable penetration 🌱"
+    elif ratio > 0.35:
+        renewable_status = "Moderate renewable usage ⚡"
+    else:
+        renewable_status = "Low renewable usage 🔥"
+
+    if prediction > avg * 1.2:
+        status = "High Load"
+        peak = "High Risk"
+    elif prediction > avg * 0.9:
+        status = "Moderate Load"
+        peak = "Medium Risk"
+    else:
+        status = "Normal Load"
+        peak = "Low Risk"
+
+    # ⚡ Critical intelligent decision
+
+    if peak == "High Risk" and renewable_ratio < 0.3:
+        actions["emergency"] = "YES"
+        actions["message"] += " CRITICAL: High demand + low renewable → Load shedding required."
+
+    elif peak == "High Risk" and renewable_ratio > 0.5:
+        actions["emergency"] = "CONTROLLED"
+        actions["message"] += " High demand but renewable helping stabilize grid."
+
+
     trend = "Stable"
 
     if prediction > lag_1:
@@ -318,6 +366,9 @@ def predict():
 
     if trend == "Increasing":
         grid_strategy.append("Prepare for demand spike")
+
+    if not grid_strategy:
+        grid_strategy.append("No immediate action required. System stable.")
 
     shifted_load = 0
     optimized_demand = prediction
@@ -349,6 +400,9 @@ def predict():
     residential = round(residential / total * prediction, 2)
     industrial = round(industrial / total * prediction, 2)
     commercial = round(commercial / total * prediction, 2)
+
+    if "emergency" not in actions:
+        actions["emergency"] = "NO"
 
     return render_template(
         "dashboard.html",
@@ -496,6 +550,70 @@ def analytics_data():
         "non_renewable": non_renewable,
         "peak": peak,
         "correlation": correlation
+    })
+
+@app.route("/renewable")
+def renewable_page():
+    return render_template("renewable.html")
+
+
+@app.route("/api/renewable-data")
+@token_required
+def renewable_data():
+
+    global demand_history
+
+    hours = list(range(1, 25))
+    demand = demand_history[-24:]
+
+    solar = []
+    wind = []
+    renewable = []
+
+    for i, d in enumerate(demand):
+
+        hour = i
+
+        # simulate realistic variation
+        clouds = 30 + (i % 5) * 10
+        wind_speed = 2 + (i % 4)
+
+        # ☀ SOLAR (linked to demand + weather)
+        if 6 <= hour <= 18:
+            sunlight_factor = (hour - 6) / 12
+            cloud_factor = (100 - clouds) / 100
+
+            s = d * 0.25 * sunlight_factor * cloud_factor
+        else:
+            s = d * 0.05
+
+        # 🌬 WIND (linked to demand + wind speed)
+        wind_factor = min(1, wind_speed / 10)
+        w = d * 0.2 * wind_factor
+
+        # 🎯 Add realism (random variation)
+        s = round(s * random.uniform(0.9, 1.1), 2)
+        w = round(w * random.uniform(0.9, 1.1), 2)
+
+        r = round(s + w, 2)
+        solar.append(s)
+        wind.append(w)
+        renewable.append(r)
+
+    total_demand = sum(demand)
+    total_renewable = sum(renewable)
+
+    percentage = round((total_renewable / total_demand) * 100, 2) if total_demand else 0
+    deficit = round(total_demand - total_renewable, 2)
+
+    return jsonify({
+        "hours": hours,
+        "demand": demand,
+        "renewable": renewable,
+        "solar": solar,
+        "wind": wind,
+        "percentage": percentage,
+        "deficit": deficit
     })
 
 @app.route("/weather")

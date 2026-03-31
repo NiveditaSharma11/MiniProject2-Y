@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Renewable Intelligence</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Poppins',sans-serif;
+background:#0b1c2c;
+color:white;
+display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:220px;
+background:#081625;
+padding:30px 20px;
+height:100vh;
+}
+
+.sidebar h2{
+color:#00e676;
+margin-bottom:40px;
+}
+
+.sidebar a{
+display:block;
+margin:15px 0;
+text-decoration:none;
+color:white;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+padding:30px;
+}
+
+/* LAYOUT */
+
+.renewable-container{
+display:grid;
+grid-template-rows:auto auto auto auto;
+gap:25px;
+}
+
+/* HERO */
+
+.hero-chart{
+background:#132f4c;
+padding:25px;
+border-radius:16px;
+}
+
+/* PANELS */
+
+.two-panels{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.panel{
+background:#132f4c;
+padding:20px;
+border-radius:14px;
+text-align:center;
+}
+
+/* INSIGHT */
+
+.insight-panel{
+background:#0f2a44;
+padding:25px;
+border-radius:16px;
+}
+
+.insight-panel p{
+margin:10px 0;
+color:#d0d7de;
+}
+
+.big-text{
+font-size:28px;
+color:#00e676;
+font-weight:600;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+<h2>⚡ Smart Energy</h2>
+
+<a href="/">Home</a>
+<a href="/predict_page">Forecast</a>
+<a href="/dashboard">Dashboard</a>
+<a href="/renewable">Renewable</a>
+<a href="/analytics">Analytics</a>
+</div>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<h1>🌱 Renewable Energy Intelligence</h1>
+
+<div class="renewable-container">
+
+<!-- HERO CHART -->
+
+<div class="hero-chart">
+<h3>Demand vs Renewable Supply</h3>
+<canvas id="areaChart"></canvas>
+</div>
+
+<!-- PANELS -->
+
+<div class="two-panels">
+
+<div class="panel">
+<h3>Renewable Share</h3>
+<canvas id="gaugeChart"></canvas>
+<p class="big-text" id="percentText">0%</p>
+</div>
+
+<div class="panel">
+<h3>Solar vs Wind Trend</h3>
+<canvas id="trendChart"></canvas>
+</div>
+
+</div>
+
+<!-- INSIGHT -->
+
+<div class="insight-panel">
+
+<h3>AI Insights</h3>
+
+<p id="status"></p>
+<p id="deficit"></p>
+<p id="suggestion"></p>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const token = localStorage.getItem("token");
+
+async function loadRenewable(){
+
+const res = await fetch("/api/renewable-data", {
+headers:{
+"Authorization":"Bearer " + token
+}
+});
+
+const data = await res.json();
+
+/* HERO AREA CHART */
+
+new Chart(document.getElementById("areaChart"), {
+type:"line",
+data:{
+labels:data.hours,
+datasets:[
+{
+label:"Demand",
+data:data.demand,
+borderColor:"#ff5252",
+fill:true,
+tension:0.4
+},
+{
+label:"Renewable",
+data:data.renewable,
+borderColor:"#00e676",
+fill:true,
+tension:0.4
+}
+]
+}
+});
+
+/* GAUGE */
+
+new Chart(document.getElementById("gaugeChart"), {
+type:"doughnut",
+data:{
+datasets:[{
+data:[data.percentage, 100-data.percentage],
+backgroundColor:["#00e676","#263238"]
+}]
+},
+options:{
+cutout:"70%"
+}
+});
+
+document.getElementById("percentText").innerText = data.percentage + "%";
+
+/* TREND */
+
+new Chart(document.getElementById("trendChart"), {
+type:"line",
+data:{
+labels:data.hours,
+datasets:[
+{
+label:"Solar",
+data:data.solar,
+borderColor:"#facc15",
+tension:0.4
+},
+{
+label:"Wind",
+data:data.wind,
+borderColor:"#38bdf8",
+tension:0.4
+}
+]
+}
+});
+
+/* INSIGHTS */
+
+document.getElementById("status").innerText =
+"Renewable contribution is " + data.percentage + "% of total demand.";
+
+document.getElementById("deficit").innerText =
+"Energy deficit: " + data.deficit + " MW";
+
+document.getElementById("suggestion").innerText =
+data.percentage < 30
+? "Increase solar usage and reduce non-renewable dependency."
+: "Renewable usage is stable. Maintain current strategy.";
+
+}
+
+loadRenewable();
+
+</script>
+
+</body>
+</html>

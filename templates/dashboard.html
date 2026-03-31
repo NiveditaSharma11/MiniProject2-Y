@@ -11,26 +11,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-
 body{
 margin:0;
 font-family:'Poppins',sans-serif;
 background:#0b1c2c;
 color:white;
-display:flex;
 }
 
 /* SIDEBAR */
 
 .sidebar{
 width:220px;
-background:#081625;
+background:linear-gradient(180deg,#0b1c2c,#0b1c2c);
 padding:30px 20px;
 height:100vh;
+position:fixed;
+left:0;
+top:0;
 }
 
 .sidebar h2{
-color:#00e5ff;
+color:white;
 margin-bottom:40px;
 }
 
@@ -39,22 +40,40 @@ display:block;
 margin:15px 0;
 text-decoration:none;
 color:white;
+opacity:0.9;
+transition:0.3s;
 }
 
-/* MAIN CONTENT */
+.sidebar a:hover{
+opacity:1;
+padding-left:5px;
+}
+
+/* MAIN */
 
 .main{
-flex:1;
+margin-left:220px;
 padding:30px;
-position:relative;
-z-index:2;
+width:calc(100% - 220px);
+box-sizing:border-box;
+}
+
+/* HEADER */
+
+.header{
+margin-bottom:30px;
+}
+
+.header h1{
+font-size:28px;
+font-weight:600;
 }
 
 /* CARDS */
 
 .cards{
 display:grid;
-grid-template-columns:repeat(4,1fr);
+grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
 gap:20px;
 margin-bottom:30px;
 }
@@ -65,46 +84,38 @@ padding:20px;
 border-radius:12px;
 text-align:center;
 transition:0.3s;
-position:relative;
-overflow:hidden;
-}
-
-/* glowing border */
-
-.card::before{
-content:"";
-position:absolute;
-top:0;
-left:-100%;
-width:100%;
-height:100%;
-background:linear-gradient(
-120deg,
-transparent,
-rgba(0,229,255,0.5),
-transparent
-);
-transition:0.5s;
-}
-
-/* hover animation */
-
-.card:hover::before{
-left:100%;
+min-height:150px;
+display:flex;
+flex-direction:column;
+justify-content:center;
 }
 
 .card:hover{
-transform:translateY(-8px);
-box-shadow:0 10px 25px rgba(0,229,255,0.3);
+transform:translateY(-5px);
+box-shadow:0 8px 20px rgba(0,229,255,0.2);
 }
 
 .card h3{
 color:#00e5ff;
 margin-bottom:10px;
+}
+
+.card p{
+margin:5px 0;
+}
+
+/* ALERT */
+
+.grid-alert{
+margin:20px 0;
+padding:14px;
+border-radius:10px;
+background:#1e3a5f;
+text-align:center;
 font-weight:500;
 }
 
-/* CHART AREA */
+/* CHARTS */
 
 .charts{
 display:grid;
@@ -116,7 +127,14 @@ margin-bottom:30px;
 .chart-card{
 background:#132f4c;
 padding:20px;
-border-radius:10px;
+border-radius:12px;
+height:360px;
+display:flex;
+flex-direction:column;
+overflow:hidden;   /* IMPORTANT */
+}
+.chart-card h3{
+margin-bottom:15px;
 }
 
 /* LOWER SECTION */
@@ -125,173 +143,92 @@ border-radius:10px;
 display:grid;
 grid-template-columns:2fr 1fr;
 gap:20px;
-}
-
-.weather{
-background:#132f4c;
-padding:20px;
-border-radius:10px;
+margin-bottom:30px;
 }
 
 .ai-panel{
 background:#132f4c;
 padding:20px;
-border-radius:10px;
+border-radius:12px;
+line-height:1.6;
+}
+
+/* OPTIMIZATION */
+
+.optimization-section{
+display:grid;
+grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+gap:20px;
+margin-top:30px;
+}
+
+.ai-panel ul{
+padding-left:18px;
 }
 
 /* FOOTER */
 
 footer{
-margin-top:40px;
 text-align:center;
-color:#cfd8dc;
-}
-
-/* ENERGY FLOW LINES */
-
-.energy-lines{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-pointer-events:none;
-z-index:0;
-}
-
-.line{
-position:absolute;
-width:200%;
-height:2px;
-background:linear-gradient(
-90deg,
-transparent,
-#00e5ff,
-transparent
-);
-animation:flow 6s linear infinite;
-opacity:0.4;
-}
-
-/* positions */
-
-.l1{
-top:20%;
-animation-duration:5s;
-}
-
-.l2{
-top:50%;
-animation-duration:7s;
-}
-
-.l3{
-top:75%;
-animation-duration:6s;
-}
-
-/* animation */
-
-@keyframes flow{
-
-0%{
-transform:translateX(-100%);
-}
-
-100%{
-transform:translateX(100%);
-}
-
-}
-
-.grid-alert{
-margin:20px 0;
-padding:15px;
-border-radius:8px;
-background:#1b3b5c;
-font-weight:500;
-text-align:center;
-transition:0.3s;
-}
-
-.grid-alert.danger{
-background:#8b0000;
-box-shadow:0 0 20px red;
-animation:blink 1s infinite alternate;
-}
-
-@keyframes blink{
-from{opacity:1;}
-to{opacity:0.7;}
-}
-
-.optimization-section{
-display:grid;
-grid-template-columns: repeat(4, 1fr);
-gap:20px;
-margin-top:20px;
-align-items:start;
-}
-
-.ai-panel{
-background:#132f4c;
 padding:20px;
-border-radius:10px;
-transition:0.3s;
-display:flex;
-flex-direction:column;
-justify-content:space-between;
-}
-
-.renewableChart{
-width:150px !important;
-height:150px !important;
-margin:20px auto 0 auto;
-display:block;
-}
-
-/* normal cards */
-.ai-panel.small{
-min-height:auto;
-}
-
-/* big chart card */
-.ai-panel.large{
-grid-column: span 2;
-}
-.ai-panel h3{
-color:#00e5ff;
-margin-bottom:10px;
-font-size:16px;
-font-weight:600;
-letter-spacing:0.5px;
-}
-
-.ai-panel p{
-margin:6px 0;
+color:#94a3b8;
 font-size:14px;
-color:#cfd8dc;
-line-height:1.4;
+border-top:1px solid rgba(255,255,255,0.05);
+margin-top:40px;
 }
 
-.ai-panel ul{
-padding-left:18px;
-margin-top:8px;
+/* RESPONSIVE FIX */
+
+@media(max-width:900px){
+
+.charts,
+.bottom{
+grid-template-columns:1fr;
 }
 
-.ai-panel li{
-margin:5px 0;
-font-size:14px;
-color:#e0e0e0;
+.sidebar{
+position:relative;
+width:100%;
+height:auto;
 }
 
-.ai-panel:hover{
-transform:translateY(-6px);
-box-shadow:0 12px 25px rgba(0,229,255,0.25);
+.main{
+margin-left:0;
+width:100%;
 }
 
+#pieChart{
+height:300px !important;
+max-height:300px;
+}
 
+}
+canvas{
+width:100% !important;
+height:280px !important;
+max-height:280px;
+}
+.chart-card canvas{
+margin-top:auto;
+}
+.card, .chart-card, .ai-panel{
+box-shadow: 0 0 0 rgba(0,0,0,0);
+transition: all 0.3s ease;
+}
 
+.card:hover, .chart-card:hover, .ai-panel:hover{
+transform: translateY(-4px);
+box-shadow: 0 10px 25px rgba(0,229,255,0.15);
+}
+#demandChart{
+height:280px !important;
+max-height:280px;
+}
+
+.chart-card{
+height:350px;
+overflow:hidden;
+}
 </style>
 
 </head>
@@ -320,6 +257,8 @@ box-shadow:0 12px 25px rgba(0,229,255,0.25);
 
 <a href="/dashboard">Dashboard</a>
 
+<a href="/renewable">Renewable</a> 
+
 <a href="/weather?city={{city}}">Weather</a>
 
 <a href="/analytics">Analytics</a>
@@ -330,8 +269,12 @@ box-shadow:0 12px 25px rgba(0,229,255,0.25);
 <!-- MAIN CONTENT -->
 
 <div class="main">
+<div class="header">
 
-<h1> AI Powered Smart Energy Grid Monitor</h1>
+<h1>AI Powered Smart Energy Grid Monitor</h1>
+
+
+</div>
 
 <!-- SUMMARY CARDS -->
 
@@ -419,7 +362,6 @@ Suggested Action: <b>{{ recommendation }}</b>
 
 
 <!-- ✅ NEW SECTION STARTS HERE -->
-
 <div class="optimization-section">
 
 <div class="ai-panel">
@@ -427,6 +369,11 @@ Suggested Action: <b>{{ recommendation }}</b>
 <h3>⚙ Grid Optimization Actions</h3>
 
 <p><b>Status:</b> {{actions.message}}</p>
+
+<p><b>Strategy:</b> {{actions.strategy}}</p>
+<p><b>Grid Action:</b> {{actions.grid_action}}</p>
+<p><b>Emergency Mode:</b> {{actions.emergency}}</p>
+<p><b>Cost Impact:</b> {{actions.cost_impact}}</p>
 
 <ul>
 <li>Load Shedding: {{actions.load_shedding}}</li>
@@ -461,45 +408,6 @@ Suggested Action: <b>{{ recommendation }}</b>
 <p><b>Optimized Demand:</b> {{optimized_demand}} MW</p>
 
 </div>
-
-</div>
-
-<div class="optimization-section">
-
-<div class="ai-panel small">
-<h3>☀ Solar Energy</h3>
-<p>{{solar}} MW</p>
-</div>
-
-<div class="ai-panel small">
-<h3>🌬 Wind Energy</h3>
-<p>{{wind_energy}} MW</p>
-</div>
-
-<div class="ai-panel small">
-<h3>🏭 Non-Renewable</h3>
-<p>{{non_renewable}} MW</p>
-</div>
-
-<div class="ai-panel large">
-<h3>🌱 Total Renewable</h3>
-<p>{{renewable}} MW</p>
-<hr style="border:0.5px solid #2c5364; margin:10px 0;">
-<p>Status: {{renewable_status}}</p>
-<canvas id="renewableChart" class="renewableChart"></canvas>
-</div>
-
-</div>
-
-
-<!-- WEATHER PANEL -->
-
-<div class="weather" style="margin-top:20px">
-
-<h3>🌦 Weather Conditions</h3>
-
-<p>City: {{city}}</p>
-<p>Temperature: {{temperature}} °C</p>
 
 </div>
 
@@ -703,46 +611,6 @@ alertBox.innerHTML = "⚠ GRID OVERLOAD WARNING — DEMAND VERY HIGH";
 alertBox.classList.add("danger");
 
 }
-
-async function loadRenewableChart(){
-
-    const token = localStorage.getItem("token");
-
-    const res = await fetch("/api/analytics-data", {
-        headers: {
-            "Authorization": "Bearer " + token
-        }
-    });
-
-    const data = await res.json();
-
-    const ctx = document.getElementById('renewableChart');
-
-    if (!ctx) return;
-
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Renewable', 'Non-Renewable'],
-            datasets: [{
-                data: [data.renewable, data.non_renewable],
-                backgroundColor: ['#00e676', '#ff5252']
-            }]
-        },
-        options: {
-            cutout: '60%',
-            plugins: {
-                legend: {
-                    labels: {
-                        color: "white"
-                    }
-                }
-            }
-        }
-    });
-}
-
-loadRenewableChart();
 
 </script>
 
