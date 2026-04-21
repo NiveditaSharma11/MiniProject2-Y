@@ -208,10 +208,16 @@ body {
   font-weight: 600;
   margin-top: 8px;
 }
-.pill-red    { background: rgba(239,68,68,0.15);  color: #f87171; }
-.pill-orange { background: rgba(251,146,60,0.15); color: #fb923c; }
-.pill-green  { background: rgba(52,211,153,0.15); color: #34d399; }
-.pill-blue   { background: rgba(56,189,248,0.15); color: #38bdf8; }
+.pill-red      { background: rgba(239,68,68,0.15);  color: #f87171; }
+.pill-orange   { background: rgba(251,146,60,0.15); color: #fb923c; }
+.pill-green    { background: rgba(52,211,153,0.15); color: #34d399; }
+.pill-blue     { background: rgba(56,189,248,0.15); color: #38bdf8; }
+.pill-critical { background: rgba(239,68,68,0.15);  color: #f87171; }
+.pill-moderate { background: rgba(251,146,60,0.15); color: #fb923c; }
+.pill-normal   { background: rgba(52,211,153,0.15); color: #34d399; }
+
+/* Load classification value — color set by JS based on class */
+.load-value { font-size: 22px; color: #38bdf8; }
 
 /* ── ALERT ── */
 .alert-bar {
@@ -437,15 +443,16 @@ footer {
 
     <div class="card">
       <div class="c-label">📊 Load Classification</div>
-      <div class="c-value" id="loadLabel" style="font-size:22px; color:{{ load_class.color if load_class else '#38bdf8' }};">
+      <div class="c-value load-value" id="loadLabel">
         {{ load_class.label if load_class else status }}
       </div>
-      <span class="pill" id="loadPill" style="{% if load_class %}{% if load_class.class == 'critical' %}background:rgba(239,68,68,0.15);color:#f87171;{% elif load_class.class == 'moderate' %}background:rgba(251,146,60,0.15);color:#fb923c;{% else %}background:rgba(52,211,153,0.15);color:#34d399;{% endif %}{% else %}background:rgba(56,189,248,0.15);color:#38bdf8;{% endif %}">
+      <span id="loadPill" class="pill {% if load_class %}pill-{{ load_class.class }}{% else %}pill-blue{% endif %}">
         {{ peak }}
       </span>
       <div class="c-sub" id="loadDesc" style="margin-top:8px; font-size:12px; line-height:1.4;">
         {{ load_class.description if load_class else 'Classifies current grid demand level' }}
       </div>
+      <span id="loadColor" style="display:none;">{{ load_class.color if load_class else '#38bdf8' }}</span>
     </div>
 
     <div class="card">
@@ -594,6 +601,13 @@ if (jinjaCity && jinjaCity !== "—") localStorage.setItem("last_city", jinjaCit
 // Update city badge with resolved city
 const badge = document.getElementById("cityBadge");
 if (badge) badge.innerText = "📍 " + city;
+
+// Apply load classification color from server-rendered value
+const loadColorEl = document.getElementById("loadColor");
+const loadLabelEl = document.getElementById("loadLabel");
+if (loadColorEl && loadLabelEl) {
+  loadLabelEl.style.color = loadColorEl.innerText.trim();
+}
 
 // ── CHART INSTANCE ──
 let forecastChart;
