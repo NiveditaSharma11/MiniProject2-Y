@@ -1,265 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
 <title>Renewable Intelligence</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body{
-margin:0;
-font-family:'Poppins',sans-serif;
-background:#0b1c2c;
-color:white;
-display:flex;
+body {
+  font-family: 'Inter', sans-serif;
+  background: #080f1a;
+  color: #e2e8f0;
+  display: flex;
+  min-height: 100vh;
+  font-size: 15px;
 }
 
 /* SIDEBAR */
-
-.sidebar{
-width:220px;
-background:#081625;
-padding:30px 20px;
-height:100vh;
+.sidebar {
+  width: 210px; min-width: 210px;
+  background: #0b1422;
+  padding: 28px 18px;
+  height: 100vh; position: fixed; left: 0; top: 0;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex; flex-direction: column;
 }
-
-.sidebar h2{
-color:#00e676;
-margin-bottom:40px;
+.sidebar .logo { font-size: 17px; font-weight: 700; color: #38bdf8; margin-bottom: 36px; padding: 0 8px; }
+.sidebar a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 12px; margin-bottom: 3px;
+  text-decoration: none; color: #64748b;
+  border-radius: 8px; font-size: 14px; font-weight: 500;
+  transition: all 0.15s;
 }
-
-.sidebar a{
-display:block;
-margin:15px 0;
-text-decoration:none;
-color:white;
-}
+.sidebar a:hover  { background: rgba(56,189,248,0.08); color: #38bdf8; }
+.sidebar a.active { background: rgba(56,189,248,0.12); color: #38bdf8; }
 
 /* MAIN */
+.main { margin-left: 210px; padding: 30px 34px; flex: 1; min-width: 0; }
 
-.main{
-flex:1;
-padding:30px;
+/* HEADER */
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-size: 22px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; }
+.page-header p  { font-size: 14px; color: #475569; }
+
+/* STAT CARDS */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
 }
-
-/* LAYOUT */
-
-.renewable-container{
-display:grid;
-grid-template-rows:auto auto auto auto;
-gap:25px;
+.stat-card {
+  background: #0f1e30;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 22px;
 }
-
-/* HERO */
-
-.hero-chart{
-background:#132f4c;
-padding:25px;
-border-radius:16px;
+.stat-card .sc-label {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: #38bdf8; margin-bottom: 10px;
 }
-
-/* PANELS */
-
-.two-panels{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:20px;
+.stat-card .sc-value {
+  font-size: 28px; font-weight: 700; color: #f8fafc; line-height: 1;
 }
+.stat-card .sc-sub { font-size: 13px; color: #475569; margin-top: 6px; }
 
-.panel{
-background:#132f4c;
-padding:20px;
-border-radius:14px;
-text-align:center;
+/* CHART CARDS */
+.chart-card {
+  background: #0f1e30;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 16px;
 }
+.chart-card .cc-title {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: #38bdf8; margin-bottom: 16px;
+}
+.chart-wrap { position: relative; height: 240px; }
+.chart-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 
 /* INSIGHT */
+.insight {
+  background: #0f1e30;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+.insight .cc-title {
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: #38bdf8; margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.insight-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 14px;
+}
+.insight-row:last-child { border-bottom: none; }
+.insight-row .k { color: #475569; }
+.insight-row .v { color: #e2e8f0; font-weight: 600; }
+.insight-row .v.green { color: #34d399; }
 
-.insight-panel{
-background:#0f2a44;
-padding:25px;
-border-radius:16px;
+footer {
+  text-align: center; padding: 22px; color: #1e293b;
+  font-size: 13px; border-top: 1px solid rgba(255,255,255,0.04); margin-top: 8px;
 }
 
-.insight-panel p{
-margin:10px 0;
-color:#d0d7de;
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .two-col, .stat-row { grid-template-columns: 1fr; }
 }
-
-.big-text{
-font-size:28px;
-color:#00e676;
-font-weight:600;
-}
-
 </style>
-
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-
 <div class="sidebar">
-<h2>⚡ Smart Energy</h2>
-
-<a href="/">Home</a>
-<a href="/predict_page">Forecast</a>
-<a href="/dashboard">Dashboard</a>
-<a href="/renewable">Renewable</a>
-<a href="/analytics">Analytics</a>
-<a href="/weather">Weather</a>
+  <div class="logo">⚡ Smart Energy</div>
+  <a href="/">🏠 Home</a>
+  <a href="/predict_page">🔮 Forecast</a>
+  <a href="/dashboard">📊 Dashboard</a>
+  <a href="/renewable" class="active">🌱 Renewable</a>
+  <a href="/weather">🌦 Weather</a>
+  <a href="/analytics">📈 Analytics</a>
 </div>
-
-<!-- MAIN -->
 
 <div class="main">
 
-<h1>🌱 Renewable Energy Intelligence</h1>
+  <div class="page-header">
+    <h1>🌱 Renewable Energy Intelligence</h1>
+    <p>Real-time solar and wind generation tracking, renewable share analysis, and grid integration insights.</p>
+  </div>
 
-<div class="renewable-container">
+  <!-- STAT CARDS -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="sc-label">Renewable Share</div>
+      <div class="sc-value" id="statPercent" style="color:#34d399;">—%</div>
+      <div class="sc-sub">of total demand</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Energy Deficit</div>
+      <div class="sc-value" id="statDeficit" style="color:#fb923c;">— MW</div>
+      <div class="sc-sub">non-renewable required</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Grid Status</div>
+      <div class="sc-value" id="statStatus" style="font-size:18px;">—</div>
+      <div class="sc-sub" id="statSuggestion">Loading...</div>
+    </div>
+  </div>
 
-<!-- HERO CHART -->
+  <!-- MAIN AREA CHART -->
+  <div class="chart-card">
+    <div class="cc-title">Demand vs Renewable Supply (24h)</div>
+    <div class="chart-wrap"><canvas id="areaChart"></canvas></div>
+  </div>
 
-<div class="hero-chart">
-<h3>Demand vs Renewable Supply</h3>
-<canvas id="areaChart"></canvas>
-</div>
+  <!-- SOLAR + WIND / GAUGE -->
+  <div class="two-col">
 
-<!-- PANELS -->
+    <div class="chart-card" style="margin-bottom:0;">
+      <div class="cc-title">Solar vs Wind Generation</div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
 
-<div class="two-panels">
+    <div class="chart-card" style="margin-bottom:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="cc-title" style="align-self:flex-start;">Renewable Share</div>
+      <div style="position:relative; width:180px; height:180px;">
+        <canvas id="gaugeChart"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+          <span id="percentText" style="font-size:28px;font-weight:700;color:#34d399;">0%</span>
+          <span style="font-size:12px;color:#475569;">renewable</span>
+        </div>
+      </div>
+    </div>
 
-<div class="panel">
-<h3>Renewable Share</h3>
-<canvas id="gaugeChart"></canvas>
-<p class="big-text" id="percentText">0%</p>
-</div>
+  </div>
 
-<div class="panel">
-<h3>Solar vs Wind Trend</h3>
-<canvas id="trendChart"></canvas>
-</div>
+  <!-- INSIGHT ROWS -->
+  <div class="insight" style="margin-top:16px;">
+    <div class="cc-title">🤖 AI Renewable Insights</div>
+    <div class="insight-row"><span class="k">Renewable Contribution</span><span class="v green" id="insightPct">—</span></div>
+    <div class="insight-row"><span class="k">Energy Deficit</span><span class="v" id="insightDeficit">—</span></div>
+    <div class="insight-row"><span class="k">Recommendation</span><span class="v" id="insightRec">—</span></div>
+  </div>
 
-</div>
-
-<!-- INSIGHT -->
-
-<div class="insight-panel">
-
-<h3>AI Insights</h3>
-
-<p id="status"></p>
-<p id="deficit"></p>
-<p id="suggestion"></p>
-
-</div>
-
-</div>
+  <footer>Smart Energy AI &nbsp;·&nbsp; AI Powered Grid Forecasting &nbsp;·&nbsp; 2026</footer>
 
 </div>
 
 <script>
-
 const token = localStorage.getItem("token");
+if (!token) { window.location.href = "/login_page"; }
 
-async function loadRenewable(){
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: "#64748b", font: { size: 12 } } } },
+  scales: {
+    x: { ticks: { color: "#64748b", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.03)" } },
+    y: { ticks: { color: "#64748b", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.03)" } }
+  }
+};
 
-const res = await fetch("/api/renewable-data", {
-headers:{
-"Authorization":"Bearer " + token
-}
-});
+async function loadRenewable() {
+  const res = await fetch("/api/renewable-data", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
 
-const data = await res.json();
+  // Stat cards
+  document.getElementById("statPercent").innerText   = data.percentage + "%";
+  document.getElementById("statDeficit").innerText   = data.deficit + " MW";
+  document.getElementById("percentText").innerText   = data.percentage + "%";
+  document.getElementById("insightPct").innerText    = data.percentage + "% of total demand";
+  document.getElementById("insightDeficit").innerText = data.deficit + " MW non-renewable required";
 
-/* HERO AREA CHART */
+  const rec = data.percentage < 30
+    ? "Increase solar/wind usage. Reduce fossil fuel dependency."
+    : "Renewable usage is stable. Maintain current strategy.";
+  document.getElementById("insightRec").innerText    = rec;
+  document.getElementById("statSuggestion").innerText = rec;
+  document.getElementById("statStatus").innerText    = data.percentage >= 50 ? "🟢 Green Grid" : data.percentage >= 30 ? "🟡 Balanced" : "🔴 Fossil Heavy";
 
-new Chart(document.getElementById("areaChart"), {
-type:"line",
-data:{
-labels:data.hours,
-datasets:[
-{
-label:"Demand",
-data:data.demand,
-borderColor:"#ff5252",
-fill:true,
-tension:0.4
-},
-{
-label:"Renewable",
-data:data.renewable,
-borderColor:"#00e676",
-fill:true,
-tension:0.4
-}
-]
-}
-});
+  // Area chart
+  new Chart(document.getElementById("areaChart"), {
+    type: "line",
+    data: {
+      labels: data.hours,
+      datasets: [
+        { label: "Demand", data: data.demand, borderColor: "#f87171", backgroundColor: "rgba(248,113,113,0.08)", fill: true, tension: 0.4, borderWidth: 2 },
+        { label: "Renewable", data: data.renewable, borderColor: "#34d399", backgroundColor: "rgba(52,211,153,0.08)", fill: true, tension: 0.4, borderWidth: 2 }
+      ]
+    },
+    options: chartDefaults
+  });
 
-/* GAUGE */
+  // Gauge
+  new Chart(document.getElementById("gaugeChart"), {
+    type: "doughnut",
+    data: {
+      datasets: [{
+        data: [data.percentage, 100 - data.percentage],
+        backgroundColor: ["#34d399", "#1e293b"],
+        borderWidth: 0
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "72%", plugins: { legend: { display: false } } }
+  });
 
-new Chart(document.getElementById("gaugeChart"), {
-type:"doughnut",
-data:{
-datasets:[{
-data:[data.percentage, 100-data.percentage],
-backgroundColor:["#00e676","#263238"]
-}]
-},
-options:{
-cutout:"70%"
-}
-});
-
-document.getElementById("percentText").innerText = data.percentage + "%";
-
-/* TREND */
-
-new Chart(document.getElementById("trendChart"), {
-type:"line",
-data:{
-labels:data.hours,
-datasets:[
-{
-label:"Solar",
-data:data.solar,
-borderColor:"#facc15",
-tension:0.4
-},
-{
-label:"Wind",
-data:data.wind,
-borderColor:"#38bdf8",
-tension:0.4
-}
-]
-}
-});
-
-/* INSIGHTS */
-
-document.getElementById("status").innerText =
-"Renewable contribution is " + data.percentage + "% of total demand.";
-
-document.getElementById("deficit").innerText =
-"Energy deficit: " + data.deficit + " MW";
-
-document.getElementById("suggestion").innerText =
-data.percentage < 30
-? "Increase solar usage and reduce non-renewable dependency."
-: "Renewable usage is stable. Maintain current strategy.";
-
+  // Solar vs Wind
+  new Chart(document.getElementById("trendChart"), {
+    type: "line",
+    data: {
+      labels: data.hours,
+      datasets: [
+        { label: "Solar", data: data.solar, borderColor: "#fbbf24", backgroundColor: "rgba(251,191,36,0.08)", fill: true, tension: 0.4, borderWidth: 2 },
+        { label: "Wind",  data: data.wind,  borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.08)", fill: true, tension: 0.4, borderWidth: 2 }
+      ]
+    },
+    options: chartDefaults
+  });
 }
 
 loadRenewable();
-
 </script>
 
 </body>

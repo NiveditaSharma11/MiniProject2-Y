@@ -1,621 +1,900 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <title>Energy Analytics Dashboard</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-body{
-margin:0;
-font-family:'Poppins',sans-serif;
-background:#0b1c2c;
-color:white;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #080f1a;
+  color: #e2e8f0;
+  display: flex;
+  min-height: 100vh;
+  font-size: 15px;
 }
 
-/* SIDEBAR */
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 210px;
+  min-width: 210px;
+  background: #0b1422;
+  padding: 28px 18px;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+}
+.sidebar .logo {
+  font-size: 17px;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 36px;
+  padding: 0 8px;
+}
+.sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  margin-bottom: 3px;
+  text-decoration: none;
+  color: #64748b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.sidebar a:hover  { background: rgba(56,189,248,0.08); color: #38bdf8; }
+.sidebar a.active { background: rgba(56,189,248,0.12); color: #38bdf8; }
 
-.sidebar{
-width:220px;
-background:linear-gradient(180deg,#0b1c2c,#0b1c2c);
-padding:30px 20px;
-height:100vh;
-position:fixed;
-left:0;
-top:0;
+/* ── MAIN ── */
+.main {
+  margin-left: 210px;
+  padding: 30px 34px;
+  flex: 1;
+  min-width: 0;
 }
 
-.sidebar h2{
-color:white;
-margin-bottom:40px;
+/* ── HEADER ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+.city-badge {
+  background: rgba(56,189,248,0.1);
+  color: #38bdf8;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(56,189,248,0.2);
 }
 
-.sidebar a{
-display:block;
-margin:15px 0;
-text-decoration:none;
-color:white;
-opacity:0.9;
-transition:0.3s;
+/* ── STAT CARDS ── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.sidebar a:hover{
-opacity:1;
-padding-left:5px;
+/* ── DEMAND RANGE BAR ── */
+.range-bar-wrap {
+  margin-top: 10px;
+}
+.range-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #475569;
+  margin-bottom: 5px;
+}
+.range-bar-track {
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  height: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.range-bar-fill {
+  position: absolute;
+  left: 25%; right: 25%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(56,189,248,0.4), #38bdf8, rgba(56,189,248,0.4));
+  border-radius: 4px;
+}
+.range-bar-center {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  width: 3px; height: 100%;
+  background: #f8fafc;
+  border-radius: 2px;
 }
 
-/* MAIN */
+/* ── SENSOR CARD ── */
+.sensor-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  margin-right: 6px;
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+.trend-arrow { font-size: 20px; font-weight: 700; }
+.trend-up    { color: #f87171; }
+.trend-down  { color: #34d399; }
+.trend-flat  { color: #94a3b8; }
 
-.main{
-margin-left:220px;
-padding:30px;
-width:calc(100% - 220px);
-box-sizing:border-box;
+/* ── FORECAST TOGGLE ── */
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.toggle-group {
+  display: flex;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+.toggle-btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.toggle-btn.active {
+  background: #38bdf8;
+  color: #080f1a;
+}
+.card {
+  background: #0f1e30;
+  border-radius: 14px;
+  padding: 22px 22px;
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-2px); }
+.card .c-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #38bdf8;
+  margin-bottom: 12px;
+}
+.card .c-value {
+  font-size: 30px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.card .c-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.pill-red    { background: rgba(239,68,68,0.15);  color: #f87171; }
+.pill-orange { background: rgba(251,146,60,0.15); color: #fb923c; }
+.pill-green  { background: rgba(52,211,153,0.15); color: #34d399; }
+.pill-blue   { background: rgba(56,189,248,0.15); color: #38bdf8; }
+
+/* ── ALERT ── */
+.alert-bar {
+  background: #0f1e30;
+  border-left: 4px solid #38bdf8;
+  border-radius: 8px;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+.alert-bar.danger { border-left-color: #ef4444; color: #f87171; background: rgba(239,68,68,0.06); }
+.alert-bar.warn   { border-left-color: #fb923c; color: #fb923c; background: rgba(251,146,60,0.06); }
+
+/* ── CHART CARDS ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-card {
+  background: #0f1e30;
+  border-radius: 14px;
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.cc-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #38bdf8;
+  margin-bottom: 18px;
+}
+.chart-wrap {
+  position: relative;
+  height: 230px;
+}
+.chart-wrap canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* HEADER */
-
-.header{
-margin-bottom:30px;
+/* ── BOTTOM ROW ── */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.header h1{
-font-size:28px;
-font-weight:600;
+/* ── PANEL BASE ── */
+.panel {
+  background: #0f1e30;
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #38bdf8;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-/* CARDS */
-
-.cards{
-display:grid;
-grid-template-columns:repeat(auto-fit, minmax(230px,1fr));
-gap:20px;
-margin-bottom:30px;
+/* ── AI RECOMMENDATION PANEL ── */
+.ai-decision-block {
+  background: rgba(56,189,248,0.07);
+  border: 1px solid rgba(56,189,248,0.15);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.ai-decision-block .decision-label {
+  font-size: 12px;
+  color: #38bdf8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.ai-decision-block .decision-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+.ai-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ai-meta-item {
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.ai-meta-item .meta-label {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.ai-meta-item .meta-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
 }
 
-.card{
-background:#132f4c;
-padding:20px;
-border-radius:12px;
-text-align:center;
-transition:0.3s;
-min-height:150px;
-display:flex;
-flex-direction:column;
-justify-content:center;
+/* ── KV ROWS ── */
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+.kv-row:last-child { border-bottom: none; }
+.kv-row .k { color: #64748b; font-weight: 400; }
+.kv-row .v { color: #e2e8f0; font-weight: 600; text-align: right; max-width: 55%; }
+.kv-row .v.green { color: #34d399; }
+
+/* ── STRATEGY LIST ── */
+.strat-list {
+  list-style: none;
+  padding: 0;
+}
+.strat-list li {
+  font-size: 14px;
+  color: #cbd5e1;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.strat-list li:last-child { border-bottom: none; }
+.strat-list li::before {
+  content: "›";
+  color: #38bdf8;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+  line-height: 1.3;
 }
 
-.card:hover{
-transform:translateY(-5px);
-box-shadow:0 8px 20px rgba(0,229,255,0.2);
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 22px;
+  color: #1e293b;
+  font-size: 13px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  margin-top: 8px;
 }
 
-.card h3{
-color:#00e5ff;
-margin-bottom:10px;
+@media (max-width: 1100px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .ai-meta { grid-template-columns: 1fr; }
 }
-
-.card p{
-margin:5px 0;
-}
-
-/* ALERT */
-
-.grid-alert{
-margin:20px 0;
-padding:14px;
-border-radius:10px;
-background:#1e3a5f;
-text-align:center;
-font-weight:500;
-}
-
-/* CHARTS */
-
-.charts{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:20px;
-margin-bottom:30px;
-}
-
-.chart-card{
-background:#132f4c;
-padding:20px;
-border-radius:12px;
-height:360px;
-display:flex;
-flex-direction:column;
-overflow:hidden;   /* IMPORTANT */
-}
-.chart-card h3{
-margin-bottom:15px;
-}
-
-/* LOWER SECTION */
-
-.bottom{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:20px;
-margin-bottom:30px;
-}
-
-.ai-panel{
-background:#132f4c;
-padding:20px;
-border-radius:12px;
-line-height:1.6;
-}
-
-/* OPTIMIZATION */
-
-.optimization-section{
-display:grid;
-grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
-gap:20px;
-margin-top:30px;
-}
-
-.ai-panel ul{
-padding-left:18px;
-}
-
-/* FOOTER */
-
-footer{
-text-align:center;
-padding:20px;
-color:#94a3b8;
-font-size:14px;
-border-top:1px solid rgba(255,255,255,0.05);
-margin-top:40px;
-}
-
-/* RESPONSIVE FIX */
-
-@media(max-width:900px){
-
-.charts,
-.bottom{
-grid-template-columns:1fr;
-}
-
-.sidebar{
-position:relative;
-width:100%;
-height:auto;
-}
-
-.main{
-margin-left:0;
-width:100%;
-}
-
-#pieChart{
-height:300px !important;
-max-height:300px;
-}
-
-}
-canvas{
-width:100% !important;
-height:280px !important;
-max-height:280px;
-}
-.chart-card canvas{
-margin-top:auto;
-}
-.card, .chart-card, .ai-panel{
-box-shadow: 0 0 0 rgba(0,0,0,0);
-transition: all 0.3s ease;
-}
-
-.card:hover, .chart-card:hover, .ai-panel:hover{
-transform: translateY(-4px);
-box-shadow: 0 10px 25px rgba(0,229,255,0.15);
-}
-#demandChart{
-height:280px !important;
-max-height:280px;
-}
-
-.chart-card{
-height:350px;
-overflow:hidden;
+@media (max-width: 800px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .charts-row, .bottom-row, .panels-row { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
-
 </head>
-
-
 <body>
 
-<div class="energy-lines">
-
-<div class="line l1"></div>
-<div class="line l2"></div>
-<div class="line l3"></div>
-
-</div>
-
-
 <!-- SIDEBAR -->
-
 <div class="sidebar">
-
-<h2>⚡ Smart Energy</h2>
-
-<a href="/">Home</a>
-
-<a href="/predict_page">Forecast</a>
-
-<a href="/dashboard">Dashboard</a>
-
-<a href="/renewable">Renewable</a> 
-
-<a href="/weather?city={{city}}">Weather</a>
-
-<a href="/analytics">Analytics</a>
-
+  <div class="logo">⚡ Smart Energy</div>
+  <a href="/">🏠 Home</a>
+  <a href="/predict_page">🔮 Forecast</a>
+  <a href="/dashboard" class="active">📊 Dashboard</a>
+  <a href="/renewable">🌱 Renewable</a>
+  <a href="/weather?city={{city}}">🌦 Weather</a>
+  <a href="/analytics">📈 Analytics</a>
 </div>
 
-
-<!-- MAIN CONTENT -->
-
+<!-- MAIN -->
 <div class="main">
-<div class="header">
 
-<h1>AI Powered Smart Energy Grid Monitor</h1>
+  <div class="page-header">
+    <h1>Smart Energy Grid Monitor</h1>
+    <span class="city-badge" id="cityBadge">📍 {{ city if city and city != '—' else '' }}</span>
+  </div>
 
+  <!-- STAT CARDS -->
+  <div class="cards" style="grid-template-columns: repeat(5,1fr);">
+
+    <div class="card">
+      <div class="c-label">Predicted Demand</div>
+      <div class="c-value" id="demandValue">{{ prediction }}</div>
+      <div class="c-sub" style="margin-bottom:8px;">MW</div>
+      <!-- Uncertainty range bar — only shown after a real forecast -->
+      {% if prediction != '—' %}
+      <div class="range-bar-wrap">
+        <div class="range-bar-label">
+          <span>{{ lower_bound }} MW</span>
+          <span style="color:#94a3b8;">±{{ confidence_range }} MW</span>
+          <span>{{ upper_bound }} MW</span>
+        </div>
+        <div class="range-bar-track">
+          <div class="range-bar-fill"></div>
+          <div class="range-bar-center"></div>
+        </div>
+      </div>
+      {% else %}
+      <div class="c-sub" style="margin-top:8px; color:#475569;">Run a forecast to see data</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="c-label">📊 Load Classification</div>
+      <div class="c-value" id="loadLabel" style="font-size:22px; color:{{ load_class.color if load_class else '#38bdf8' }};">
+        {{ load_class.label if load_class else status }}
+      </div>
+      <span class="pill" id="loadPill" style="{% if load_class %}{% if load_class.class == 'critical' %}background:rgba(239,68,68,0.15);color:#f87171;{% elif load_class.class == 'moderate' %}background:rgba(251,146,60,0.15);color:#fb923c;{% else %}background:rgba(52,211,153,0.15);color:#34d399;{% endif %}{% else %}background:rgba(56,189,248,0.15);color:#38bdf8;{% endif %}">
+        {{ peak }}
+      </span>
+      <div class="c-sub" id="loadDesc" style="margin-top:8px; font-size:12px; line-height:1.4;">
+        {{ load_class.description if load_class else 'Classifies current grid demand level' }}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-label">Weather</div>
+      <div class="c-value" id="weatherTemp" style="font-size:26px;">{{ temperature }}°C</div>
+      <div class="c-sub" id="weatherHumidity">💧 Humidity {{ humidity }}%</div>
+      <div class="c-sub" id="weatherWind">💨 Wind {{ wind }} m/s</div>
+    </div>
+
+    <div class="card">
+      <div class="c-label">Renewable Mix</div>
+      <div class="c-value" id="renewableTotal" style="font-size:24px; color:#34d399;">{{ renewable }} MW</div>
+      <div class="c-sub" id="renewableSolar">☀ Solar {{ solar }} MW</div>
+      <div class="c-sub" id="renewableWind">🌬 Wind {{ wind_energy }} MW</div>
+    </div>
+
+    <!-- SENSOR FEED CARD -->
+    <div class="card">
+      <div class="c-label">
+        <span class="sensor-dot"></span>Live Sensor Feed
+      </div>
+      <div class="c-value" style="font-size:26px;" id="sensorValue">—</div>
+      <div class="c-sub">MW</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+        <span class="trend-arrow" id="sensorArrow">—</span>
+        <span class="c-sub" id="sensorChange">Loading...</span>
+      </div>
+      <div class="c-sub" id="sensorTime" style="margin-top:6px; font-size:11px;">—</div>
+    </div>
+
+  </div>
+
+  <!-- ALERT -->
+  <div id="gridAlert" class="alert-bar">⚡ Grid operating normally</div>
+
+  <!-- CHARTS ROW -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="cc-title" style="margin-bottom:0;">Demand Forecast</div>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn6h"  onclick="switchForecast('short')">Next 6h</button>
+          <button class="toggle-btn"        id="btn24h" onclick="switchForecast('long')">24h</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-title">Load Distribution</div>
+      <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- WEATHER + AI REC -->
+  <div class="bottom-row">
+
+    <div class="chart-card">
+      <div class="cc-title">Weather Impact on Demand</div>
+      <div class="chart-wrap"><canvas id="weatherChart"></canvas></div>
+    </div>
+
+    <!-- AI RECOMMENDATION -->
+    <div class="panel">
+      <div class="panel-title">🤖 AI-Generated Recommendations</div>
+
+      <!-- Big decision block -->
+      <div class="ai-decision-block">
+        <div class="decision-label">AI Decision — Load Classification: {{ load_class.label if load_class else status }}</div>
+        <div class="decision-value">{{ actions.ai_decision }}</div>
+      </div>
+
+      <!-- 2x2 meta grid -->
+      <div class="ai-meta">
+        <div class="ai-meta-item">
+          <div class="meta-label">AI Advice</div>
+          <div class="meta-value">{{ actions.ai_advice }}</div>
+        </div>
+        <div class="ai-meta-item">
+          <div class="meta-label">Demand Trend</div>
+          <div class="meta-value">{{ trend }}</div>
+        </div>
+        <div class="ai-meta-item">
+          <div class="meta-label">Recommended Strategy</div>
+          <div class="meta-value">{{ actions.strategy }}</div>
+        </div>
+        <div class="ai-meta-item">
+          <div class="meta-label">Emergency Mode</div>
+          <div class="meta-value">{{ actions.emergency }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COST + GRID ACTIONS -->
+  <div class="bottom-row">
+
+    <div class="panel">
+      <div class="panel-title">💰 Cost & Efficiency</div>
+      <div class="kv-row">
+        <span class="k">Total Cost</span>
+        <span class="v">₹{{ actions.total_cost }}</span>
+      </div>
+      <div class="kv-row">
+        <span class="k">Cost Saved via Renewables</span>
+        <span class="v green">₹{{ actions.cost_saving }}</span>
+      </div>
+      <div class="kv-row">
+        <span class="k">Efficiency Rating</span>
+        <span class="v">{{ actions.cost_status }}</span>
+      </div>
+      <div class="kv-row">
+        <span class="k">Optimized Demand</span>
+        <span class="v">{{ optimized_demand }} MW</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">⚡ Grid Action Plan</div>
+      <ul class="strat-list">
+        {% for item in grid_strategy %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>Smart Energy AI &nbsp;·&nbsp; AI Powered Grid Forecasting &nbsp;·&nbsp; 2026</footer>
 
 </div>
-
-<!-- SUMMARY CARDS -->
-
-<div class="cards">
-
-<div class="card">
-<h3>⚡ Predicted Demand</h3>
-<p id="demandValue">{{prediction}}</p>
-<p>MW</p>
-
-<p style="font-size:14px;color:#cbd5f5;">
-Range: {{lower_bound}} - {{upper_bound}} MW
-</p>
-
-</div>
-
-<div class="card">
-<h3>🌡 Temperature</h3>
-<p>{{temperature}} °C</p>
-</div>
-
-<div class="card">
-<h3>⚠ Peak Risk</h3>
-<p>{{peak}}</p>
-</div>
-
-<div class="card">
-<h3>🔌 Grid Status</h3>
-<p>{{status}}</p>
-</div>
-
-</div>
-
-<div id="gridAlert" class="grid-alert">
-
-⚡ Grid operating normally
-
-</div>
-
-
-<!-- CHARTS -->
-
-<div class="charts">
-
-<div class="chart-card">
-<h3>24 Hour Demand Forecast</h3>
-<canvas id="forecastChart"></canvas>
-</div>
-
-<div class="chart-card">
-<h3>Load Distribution</h3>
-<canvas id="pieChart"></canvas>
-</div>
-
-</div>
-
-
-<!-- LOWER SECTION -->
-
-<div class="bottom">
-
-<div class="chart-card">
-<h3>Weather Impact on Demand</h3>
-<canvas id="weatherChart"></canvas>
-</div>
-
-<div class="ai-panel">
-
-<h3>🤖 AI Recommendation</h3>
-<p>🧠 AI Decision: <b>{{actions.ai_decision}}</b></p>
-<p>💡 AI Advice: <b>{{actions.ai_advice}}</b></p>
-
-<p>
-Based on current weather conditions and predicted demand,
-the grid is operating under <b>{{status}}</b> conditions.
-</p>
-
-<p>📈 Trend: <b>{{ trend }}</b></p>
-
-<p>
-Suggested Action: <b>{{ recommendation }}</b>
-</p>
-
-</div>
-
-</div>
-
-
-<!-- ✅ NEW SECTION STARTS HERE -->
-<div class="optimization-section">
-
-<div class="ai-panel">
-
-<h3>⚙ Grid Optimization Actions</h3>
-
-<p><b>Status:</b> {{actions.message}}</p>
-
-<p><b>Strategy:</b> {{actions.strategy}}</p>
-<p><b>Grid Action:</b> {{actions.grid_action}}</p>
-<p><b>Emergency Mode:</b> {{actions.emergency}}</p>
-<p><b>Cost Impact:</b> {{actions.cost_impact}}</p>
-
-<ul>
-<li>Load Shedding: {{actions.load_shedding}}</li>
-<li>Backup Power: {{actions.backup_power}}</li>
-<li>Demand Response: {{actions.demand_response}}</li>
-</ul>
-
-</div>
-
-
-<div class="ai-panel">
-
-<h3>📊 Smart Grid Strategy</h3>
-
-<ul>
-{% for item in grid_strategy %}
-<li>{{item}}</li>
-{% endfor %}
-</ul>
-
-</div>
-
-
-<div class="ai-panel small">
-
-<h3>⚡ Load Optimization</h3>
-
-<p><b>Original Demand:</b> {{prediction}} MW</p>
-
-<p><b>Shifted Load:</b> {{shifted_load}} MW</p>
-
-<p><b>Optimized Demand:</b> {{optimized_demand}} MW</p>
-
-</div>
-
-</div>
-
-
-<footer>
-
-<p>Smart Energy AI | AI Powered Grid Forecasting | Hackathon Project 2026</p>
-
-</footer>
-
-</div>
-
 
 <script>
-
 const token = localStorage.getItem("token");
+if (!token) { window.location.href = "/login_page"; }
 
-if (!token) {
-    window.location.href = "/login_page";
-}
+// Jinja city — only trust it if it's a non-empty real value
+const jinjaCity = "{{ city }}".trim();
+const city = (jinjaCity && jinjaCity !== "—") 
+  ? jinjaCity 
+  : (localStorage.getItem("last_city") || "Delhi");
 
-/* AI DEMAND FORECAST FROM MODEL */
+// Only persist if we have a real city (don't overwrite with empty)
+if (jinjaCity && jinjaCity !== "—") localStorage.setItem("last_city", jinjaCity);
 
+// Update city badge with resolved city
+const badge = document.getElementById("cityBadge");
+if (badge) badge.innerText = "📍 " + city;
+
+// ── CHART INSTANCE ──
 let forecastChart;
-let city = "{{city}}";
+let forecastMode = "short"; // "short" = 6h, "long" = 24h
 
-async function loadForecast(){
+const chartOpts = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: "#64748b", font: { size: 13 } } } },
+  scales: {
+    x: { ticks: { color: "#64748b", font: { size: 12 } }, grid: { color: "rgba(255,255,255,0.03)" } },
+    y: { ticks: { color: "#64748b", font: { size: 12 } }, grid: { color: "rgba(255,255,255,0.03)" } }
+  }
+};
 
-const res = await fetch(`/api/chart-data?city=${city}`, {
-    headers: {
-        "Authorization": "Bearer " + token
-    }
-});
+function buildForecastChart(labels, demand, lower, upper) {
+  const datasets = [{
+    label: "Demand (MW)",
+    data: demand,
+    borderColor: "#38bdf8",
+    backgroundColor: "rgba(56,189,248,0.08)",
+    borderWidth: 2.5,
+    tension: 0.4,
+    fill: true,
+    pointRadius: 3,
+    pointBackgroundColor: "#38bdf8",
+    order: 1
+  }];
 
-const data = await res.json();
-
-if(!forecastChart){
-
-const ctx = document.getElementById("forecastChart");
-
-forecastChart = new Chart(ctx,{
-
-type:"line",
-
-data:{
-labels:data.labels,
-
-datasets:[{
-label:"Predicted Electricity Demand (MW)",
-data:data.demand,
-borderColor:"#00e5ff",
-backgroundColor:"rgba(0,229,255,0.2)",
-borderWidth:3,
-tension:0.4,
-fill:true
-}]
-},
-
-options:{
-plugins:{
-legend:{
-labels:{color:"white"}
-}
-},
-
-scales:{
-x:{
-ticks:{color:"white"}
-},
-y:{
-ticks:{color:"white"}
-}
-}
-
-}
-
-});
-
-}
-else{
-
-forecastChart.data.labels = data.labels;
-
-forecastChart.data.datasets[0].data = data.demand;
-
-forecastChart.update();
-
-}
-
-}
-
-loadForecast();
-
-setInterval(loadForecast,10000);
-
-/* PIE CHART */
-
-async function loadPieChart(){
-
-    const res = await fetch(`/api/dashboard-data`, {
-    headers: {
-        "Authorization": "Bearer " + token
-    }
-});
-    const data = await res.json();
-
-    const pie = document.getElementById('pieChart').getContext('2d');
-
-    new Chart(pie,{
-        type:'pie',
-        data:{
-            labels:['Residential','Industrial','Commercial'],
-            datasets:[{
-                data:[data.residential, data.industrial, data.commercial],
-                backgroundColor:['#00e5ff','#4caf50','#ff9800']
-            }]
-        },
-        options:{
-            responsive:true
-        }
+  // add confidence band only for short-term
+  if (lower && upper) {
+    datasets.push({
+      label: "Upper Bound",
+      data: upper,
+      borderColor: "rgba(56,189,248,0.25)",
+      backgroundColor: "rgba(56,189,248,0.06)",
+      borderWidth: 1,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      fill: "+1",
+      tension: 0.4,
+      order: 2
     });
+    datasets.push({
+      label: "Lower Bound",
+      data: lower,
+      borderColor: "rgba(56,189,248,0.25)",
+      backgroundColor: "rgba(56,189,248,0.06)",
+      borderWidth: 1,
+      borderDash: [4, 4],
+      pointRadius: 0,
+      fill: false,
+      tension: 0.4,
+      order: 3
+    });
+  }
 
+  if (!forecastChart) {
+    forecastChart = new Chart(document.getElementById("forecastChart"), {
+      type: "line",
+      data: { labels, datasets },
+      options: chartOpts
+    });
+  } else {
+    forecastChart.data.labels = labels;
+    forecastChart.data.datasets = datasets;
+    forecastChart.update();
+  }
 }
 
-if(document.getElementById("pieChart")){
-    loadPieChart();
+async function loadShortForecast() {
+  const res = await fetch(`/api/short-term-forecast?city=${city}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  if (data.labels && data.labels.length) {
+    buildForecastChart(data.labels, data.demand, data.lower, data.upper);
+  }
 }
 
-/* WEATHER CHART */
+async function loadLongForecast() {
+  const res = await fetch(`/api/chart-data?city=${city}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  buildForecastChart(data.labels, data.demand, null, null);
+}
 
-const temperature = Number("{{ temperature | default(0) }}");
+function switchForecast(mode) {
+  forecastMode = mode;
+  document.getElementById("btn6h").classList.toggle("active",  mode === "short");
+  document.getElementById("btn24h").classList.toggle("active", mode === "long");
+  if (mode === "short") loadShortForecast();
+  else                  loadLongForecast();
+}
 
-const weather = document.getElementById('weatherChart');
-const humidity = Number("{{ humidity | default(0) }}");
-const wind = Number("{{ wind | default(0) }}");
+// initial load — short-term first
+loadShortForecast();
+setInterval(() => {
+  if (forecastMode === "short") loadShortForecast();
+  else                          loadLongForecast();
+}, 60000);
 
-new Chart(weather, {
-    type: 'bar',
+// ── DOUGHNUT CHART ──
+async function loadPieChart() {
+  const res = await fetch("/api/dashboard-data", { headers: { "Authorization": "Bearer " + token } });
+  const data = await res.json();
+  new Chart(document.getElementById("pieChart"), {
+    type: "doughnut",
     data: {
-        labels: ['Temperature', 'Humidity', 'Wind'],
-        datasets: [{
-            label: 'Weather Impact',
-            data: [temperature, humidity, wind],
-            backgroundColor: ['#00e5ff', '#4caf50', '#ff9800']
-        }]
+      labels: ["Residential", "Industrial", "Commercial"],
+      datasets: [{
+        data: [data.residential, data.industrial, data.commercial],
+        backgroundColor: ["#38bdf8", "#34d399", "#fb923c"],
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
     },
     options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                labels: {
-                    color: "white"
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: { color: "white" }
-            },
-            y: {
-                ticks: { color: "white" }
-            }
-        }
+      responsive: true, maintainAspectRatio: false,
+      cutout: "62%",
+      plugins: {
+        legend: { position: "bottom", labels: { color: "#64748b", font: { size: 13 }, padding: 16 } }
+      }
     }
-});
+  });
+}
+loadPieChart();
 
-/* LIVE DEMAND ANIMATION */
+// ── WEATHER CHART ──
+const temperature = Number("{{ temperature | default(0) }}") || 0;
+const humidity    = Number("{{ humidity | default(0) }}") || 0;
+const wind        = Number("{{ wind | default(0) }}") || 0;
 
-async function updateDemand(){
+async function buildWeatherChart() {
+  let temp = temperature, hum = humidity, wnd = wind;
 
-let city = "{{city}}";
+  // If no server-side values (direct dashboard visit), fetch live
+  if (!temp && !hum && !wnd && city) {
+    try {
+      const res = await fetch(`/api/weather-data?city=${city}`, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const wd = await res.json();
+      if (!wd.error) {
+        temp = wd.temperature || 0;
+        hum  = wd.humidity ? wd.humidity[3] : 0;
+        wnd  = wd.wind || 0;
+      }
+    } catch(e) {}
+  }
 
-const res = await fetch(`/api/chart-data?city=${city}`, {
-    headers: {
-        "Authorization": "Bearer " + token
+  new Chart(document.getElementById("weatherChart"), {
+    type: "bar",
+    data: {
+      labels: ["Temperature (°C)", "Humidity (%)", "Wind (m/s)"],
+      datasets: [{
+        label: "Current Reading",
+        data: [temp, hum, wnd],
+        backgroundColor: ["rgba(56,189,248,0.65)", "rgba(52,211,153,0.65)", "rgba(251,146,60,0.65)"],
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#64748b", font: { size: 13 } }, grid: { display: false } },
+        y: { ticks: { color: "#64748b", font: { size: 13 } }, grid: { color: "rgba(255,255,255,0.03)" } }
+      }
     }
-});
-
-const data = await res.json();
-
-let latestDemand = data.demand[data.demand.length - 1];
-
-document.getElementById("demandValue").innerText = latestDemand;
-
+  });
 }
+buildWeatherChart();
+// ── LIVE SENSOR FEED ──
+async function updateSensor() {
+  try {
+    const res = await fetch("/api/sensor-status", {
+      headers: { "Authorization": "Bearer " + token }
+    });
 
-setInterval(updateDemand,5000);
+    if (!res.ok) {
+      document.getElementById("sensorValue").innerText = "—";
+      document.getElementById("sensorChange").textContent = "Auth error";
+      return;
+    }
 
-/* GRID OVERLOAD ALERT */
+    const data = await res.json();
 
-let demandValue = Number("{{prediction}}");
+    if (data.latest_demand === undefined) {
+      document.getElementById("sensorValue").innerText = "—";
+      document.getElementById("sensorChange").textContent = "No data";
+      return;
+    }
 
-let alertBox = document.getElementById("gridAlert");
+    document.getElementById("sensorValue").innerText = data.latest_demand;
+    document.getElementById("sensorTime").innerText  = "Updated " + data.timestamp;
 
-let peakRisk = "{{peak}}";
+    const arrow  = document.getElementById("sensorArrow");
+    const change = document.getElementById("sensorChange");
 
-if(peakRisk === "High Risk"){
-
-alertBox.innerHTML = "⚠ GRID OVERLOAD WARNING — DEMAND VERY HIGH";
-
-alertBox.classList.add("danger");
-
+    if (data.trend === "Rising") {
+      arrow.textContent  = "↑";
+      arrow.className    = "trend-arrow trend-up";
+      change.textContent = "+" + data.change + " MW";
+    } else if (data.trend === "Falling") {
+      arrow.textContent  = "↓";
+      arrow.className    = "trend-arrow trend-down";
+      change.textContent = data.change + " MW";
+    } else {
+      arrow.textContent  = "→";
+      arrow.className    = "trend-arrow trend-flat";
+      change.textContent = "Stable";
+    }
+  } catch(e) {
+    document.getElementById("sensorValue").innerText    = "—";
+    document.getElementById("sensorChange").textContent = "Unavailable";
+  }
 }
+updateSensor();
+setInterval(updateSensor, 15000);
 
+// ── REFRESH STAT CARDS on direct visit ──
+// When Jinja has no prediction context, fetch live data from APIs
+async function refreshCards() {
+  const isDirectVisit = "{{ prediction }}" === "—";
+  if (!isDirectVisit) return; // already has server-rendered values
+
+  try {
+    // Weather card
+    const wRes = await fetch(`/api/weather-data?city=${city}`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const w = await wRes.json();
+    if (!w.error) {
+      document.getElementById("weatherTemp").innerText     = w.temperature + "°C";
+      document.getElementById("weatherHumidity").innerText = "💧 Humidity " + w.humidity[3] + "%";
+      document.getElementById("weatherWind").innerText     = "💨 Wind " + w.wind + " m/s";
+    }
+  } catch(e) {}
+
+  try {
+    // Load classification card
+    const lcRes = await fetch("/api/load-classification", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const lc = await lcRes.json();
+    if (lc.load_label) {
+      const labelEl = document.getElementById("loadLabel");
+      const pillEl  = document.getElementById("loadPill");
+      const descEl  = document.getElementById("loadDesc");
+      labelEl.innerText = lc.load_label;
+      pillEl.innerText  = lc.risk_level;
+      labelEl.style.color = lc.color;
+      if (descEl) descEl.innerText = lc.description;
+      if (lc.class === "critical") {
+        pillEl.style.background = "rgba(239,68,68,0.15)"; pillEl.style.color = "#f87171";
+      } else if (lc.class === "moderate") {
+        pillEl.style.background = "rgba(251,146,60,0.15)"; pillEl.style.color = "#fb923c";
+      } else {
+        pillEl.style.background = "rgba(52,211,153,0.15)"; pillEl.style.color = "#34d399";
+      }
+    }
+  } catch(e) {}
+
+  try {
+    // Renewable card — derive from renewable-data API
+    const rRes = await fetch("/api/renewable-data", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const r = await rRes.json();
+    if (r.renewable) {
+      const totalRenewable = r.renewable[r.renewable.length - 1];
+      const totalSolar     = r.solar[r.solar.length - 1];
+      const totalWind      = r.wind[r.wind.length - 1];
+      document.getElementById("renewableTotal").innerText = totalRenewable + " MW";
+      document.getElementById("renewableSolar").innerText = "☀ Solar " + totalSolar + " MW";
+      document.getElementById("renewableWind").innerText  = "🌬 Wind " + totalWind + " MW";
+    }
+  } catch(e) {}
+}
+refreshCards();
+async function updateDemand() {
+  const res = await fetch(`/api/chart-data?city=${city}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  document.getElementById("demandValue").innerText = data.demand[data.demand.length - 1];
+}
+setInterval(updateDemand, 30000);
+
+// ── ALERT BAR ──
+const alertBox = document.getElementById("gridAlert");
+const peakRisk  = "{{ peak }}";
+if (peakRisk === "High Risk") {
+  alertBox.innerHTML = "⚠ Grid Overload Warning — Demand critically high";
+  alertBox.classList.add("danger");
+} else if (peakRisk === "Medium Risk") {
+  alertBox.innerHTML = "⚡ Moderate demand detected — monitor grid closely";
+  alertBox.classList.add("warn");
+}
 </script>
-
-
 </body>
 </html>

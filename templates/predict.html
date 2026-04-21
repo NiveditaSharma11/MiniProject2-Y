@@ -1,237 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <title>Energy Demand Prediction</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body{
-margin:0;
-font-family:'Poppins', sans-serif;
-background:#0b1c2c;
-color:white;
+body {
+  font-family: 'Inter', sans-serif;
+  background: #080f1a;
+  color: #e2e8f0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* NAVBAR */
+/* NAV */
+.navbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 48px; background: #0b1422;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.logo { font-size: 17px; font-weight: 700; color: #38bdf8; }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a {
+  text-decoration: none; color: #64748b; font-size: 14px; font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: #e2e8f0; }
 
-.navbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 60px;
-background:#081625;
+/* PAGE */
+.page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
 }
 
-.logo{
-font-size:22px;
-font-weight:600;
-color:#00e5ff;
+.form-wrap {
+  width: 100%;
+  max-width: 460px;
 }
 
-.nav-links a{
-margin-left:25px;
-text-decoration:none;
-color:white;
+.form-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.form-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 8px;
+}
+.form-header p {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
 }
 
-/* PAGE HEADER */
-
-.header{
-text-align:center;
-padding:60px 20px 20px 20px;
+.card {
+  background: #0f1e30;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 36px;
 }
 
-.header h1{
-margin-bottom:10px;
+.field { margin-bottom: 20px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.field input,
+.field select {
+  width: 100%;
+  padding: 11px 14px;
+  background: #080f1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field input:focus,
+.field select:focus { border-color: #38bdf8; }
+.field select option { background: #0f1e30; }
+
+.error-msg {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #f87171;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 20px;
 }
 
-.header p{
-color:#cfd8dc;
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
 }
-
-/* FORM CARD */
-
-.form-container{
-display:flex;
-justify-content:center;
-margin-top:40px;
+.predict-btn {
+  flex: 1;
+  padding: 13px;
+  background: #38bdf8;
+  border: none;
+  border-radius: 8px;
+  color: #080f1a;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
 }
-
-.card{
-background:#132f4c;
-padding:40px;
-border-radius:10px;
-width:420px;
+.predict-btn:hover { opacity: 0.85; }
+.back-btn {
+  padding: 13px 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s, color 0.15s;
 }
+.back-btn:hover { border-color: #38bdf8; color: #38bdf8; }
 
-/* INPUTS */
-
-label{
-display:block;
-margin-top:15px;
-margin-bottom:5px;
+.info-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
 }
-
-input, select{
-width:100%;
-padding:10px;
-border-radius:6px;
-border:none;
+.info-chip {
+  flex: 1;
+  background: #0f1e30;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
 }
+.info-chip .ic-icon { font-size: 20px; margin-bottom: 6px; }
 
-/* BUTTONS */
-
-.buttons{
-margin-top:25px;
-display:flex;
-justify-content:space-between;
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #1e293b;
+  font-size: 12px;
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
-
-.predict-btn{
-padding:12px 20px;
-background:#00e5ff;
-border:none;
-border-radius:6px;
-font-weight:600;
-cursor:pointer;
-}
-
-.back-btn{
-padding:12px 20px;
-background:#081625;
-border:none;
-border-radius:6px;
-color:white;
-cursor:pointer;
-}
-
-/* INFO SECTION */
-
-.info{
-text-align:center;
-margin-top:40px;
-color:#cfd8dc;
-}
-
-footer{
-text-align:center;
-padding:30px;
-background:#081625;
-margin-top:60px;
-}
-
 </style>
-
 </head>
-
 <body>
 
-
-<!-- NAVBAR -->
-
 <div class="navbar">
-
-<div class="logo">⚡ Smart Energy AI</div>
-
-<div class="nav-links">
-<a href="/">Home</a>
-<a href="/predict_page">Predict</a>
+  <div class="logo">⚡ Smart Energy AI</div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
+  </div>
 </div>
 
+<div class="page">
+  <div class="form-wrap">
+
+    <div class="form-header">
+      <h1>⚡ Energy Demand Forecast</h1>
+      <p>Enter your city and region type to generate an AI-powered electricity demand prediction with weather-aware analysis.</p>
+    </div>
+
+    <div class="card">
+
+      {% if error %}
+      <div class="error-msg">⚠ {{ error }}</div>
+      {% endif %}
+
+      <form action="/predict" method="POST">
+
+        <div class="field">
+          <label>📍 City Name</label>
+          <input type="text" name="city" placeholder="e.g. Mumbai, Delhi, Bangalore" required>
+        </div>
+
+        <div class="field">
+          <label>📅 Date</label>
+          <input type="date" name="date">
+        </div>
+
+        <div class="field">
+          <label>⏰ Time</label>
+          <input type="time" name="time">
+        </div>
+
+        <div class="field">
+          <label>🏭 Region Type</label>
+          <select name="region">
+            <option value="Mixed">Mixed</option>
+            <option value="Residential">Residential</option>
+            <option value="Industrial">Industrial</option>
+            <option value="Commercial">Commercial</option>
+          </select>
+        </div>
+
+        <div class="buttons">
+          <button class="predict-btn" type="submit">Predict Demand →</button>
+          <a href="/" class="back-btn">Back</a>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip">
+        <div class="ic-icon">🌦</div>
+        Weather fetched automatically
+      </div>
+      <div class="info-chip">
+        <div class="ic-icon">🤖</div>
+        ML model prediction
+      </div>
+      <div class="info-chip">
+        <div class="ic-icon">⚡</div>
+        Real-time grid insights
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<footer>Smart Energy AI &nbsp;·&nbsp; AI Powered Grid Forecasting &nbsp;·&nbsp; 2026</footer>
 
-<!-- PAGE HEADER -->
-
-<div class="header">
-
-<h1>⚡ Energy Demand Prediction</h1>
-
-<p>
-Enter location and time to forecast electricity demand using AI and weather data
-</p>
-
-</div>
-
-
-<!-- FORM -->
-
-<div class="form-container">
-
-<div class="card">
-
-<form action="/predict" method="POST">
-
-<label>📍 City Name</label>
-<input type="text" name="city" placeholder="Enter City" required>
-
-
-<label>📅 Date</label>
-<input type="date" name="date">
-
-
-<label>⏰ Time</label>
-<input type="time" name="time">
-
-
-<label>🏭 Region Type</label>
-<select name="region">
-<option>Residential</option>
-<option>Industrial</option>
-<option>Commercial</option>
-<option>Mixed</option>
-</select>
-
-
-<div class="buttons">
-
-<button class="predict-btn" type="submit">
-Predict Demand
-</button>
-
-<a href="/">
-<button class="back-btn" type="button">
-Back
-</button>
-</a>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-
-<!-- INFO -->
-
-<div class="info">
-
-<p>
-Weather data will be automatically fetched to improve prediction accuracy.
-</p>
-
-<p>
-The AI model analyzes temperature, humidity, and other factors to forecast grid load.
-</p>
-
-</div>
-
-
-<!-- FOOTER -->
-
-<footer>
-
-<p>Smart Energy Grid Forecasting | AI Powered Energy Analytics</p>
-
-</footer>
-
+<script>
+  // Auth check — redirect to login if no token
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login_page"; }
+</script>
 
 </body>
 </html>
