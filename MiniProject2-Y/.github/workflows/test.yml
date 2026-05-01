@@ -1,0 +1,37 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Create dummy .env for testing
+        run: |
+          echo "OPENWEATHER_API_KEY=test_key" >> .env
+          echo "SECRET_KEY=test_secret_key_for_ci" >> .env
+          echo "DATA_PATH=data/continuous dataset.csv" >> .env
+          echo "FLASK_DEBUG=false" >> .env
+
+      - name: Run tests
+        run: |
+          python -m pytest test_app.py -v --tb=short

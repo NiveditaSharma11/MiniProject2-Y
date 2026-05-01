@@ -1,0 +1,8 @@
+*.pkl
+venv/
+__pycache__/
+.ipynb_checkpoints/
+.env
+firebase-service-account.json
+model.pklMiniProject2-Y/ 
+MiniProject2-Y/
