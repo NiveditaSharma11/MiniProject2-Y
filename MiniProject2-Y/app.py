@@ -28,20 +28,32 @@ load_dotenv()
 # ── FIREBASE ADMIN INIT ───────────────────────────────────────────────────────
 import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth_module
+import json
 
 _firebase_initialized = False
+
+# Option A: read credentials from env variable (used on Render / production)
+_firebase_service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+# Option B: read credentials from a local file (used in local development)
 _firebase_service_account_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "firebase-service-account.json")
 
-if os.path.exists(_firebase_service_account_path):
-    try:
+try:
+    if _firebase_service_account_json:
+        # Parse the JSON string from the environment variable
+        service_account_info = json.loads(_firebase_service_account_json)
+        cred = credentials.Certificate(service_account_info)
+        firebase_admin.initialize_app(cred)
+        _firebase_initialized = True
+        print("✅ Firebase Admin SDK initialized (from env variable)")
+    elif os.path.exists(_firebase_service_account_path):
         cred = credentials.Certificate(_firebase_service_account_path)
         firebase_admin.initialize_app(cred)
         _firebase_initialized = True
-        print("✅ Firebase Admin SDK initialized")
-    except Exception as _e:
-        print(f"⚠️  Firebase Admin init failed: {_e}")
-else:
-    print("⚠️  Firebase service account file not found — Google login disabled")
+        print("✅ Firebase Admin SDK initialized (from file)")
+    else:
+        print("⚠️  Firebase service account not found — Google login disabled")
+except Exception as _e:
+    print(f"⚠️  Firebase Admin init failed: {_e}")
 
 warnings.filterwarnings(action='ignore', category=UserWarning)
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
